@@ -1,0 +1,47 @@
+PROJECT 13 — MOTION DETECTION LIGHT
+
+
+                  PIR SENSOR
+              +-------------+
+              |             |
+       5V ────┤ VCC         |
+       D2 ────┤ OUT         |
+      GND ────┤ GND         |
+              +-------------+
+                    │
+                    │ DIGITAL SIGNAL
+                    ▼
+
+              +-------------+
+              | ARDUINO UNO |
+              |             |
+       D2 ────┤ PIR INPUT   |
+              |             |
+       D8 ────┤ LED OUTPUT  |
+              +──────┬──────+
+                     │
+                    220Ω
+                     │
+                    LED
+                     │
+                    ▼
+                    GND
+
+
+LOGIC
+
+     Motion?
+       │
+   ┌───┴───┐
+   │       │
+  YES      NO
+   │       │
+   ▼       ▼
+ LED ON   Check
+   │      timer
+   │       │
+   │    5 seconds
+   │       │
+   └───────┤
+           ▼
+        LED OFF

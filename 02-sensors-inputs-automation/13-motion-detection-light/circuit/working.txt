@@ -1,0 +1,86 @@
+How It Works
+
+The PIR sensor detects changes in infrared radiation caused by movement.
+
+The module provides a digital output:
+
+LOW  → No motion
+HIGH → Motion detected
+
+The Arduino reads this signal using:
+
+digitalRead(PIR_PIN);
+Light Behavior
+
+When motion is detected:
+
+PIR HIGH
+   ↓
+Record motion time
+   ↓
+LED ON
+
+After five seconds without new motion:
+
+No recent motion
+      ↓
+LED OFF
+
+Every new motion event resets the timer.
+
+PIR Module Setup
+
+Many HC-SR501 modules include adjustment controls for:
+
+Sensitivity
+Time delay
+
+For this project, the Arduino program manages the light timeout using millis().
+
+The module's own configuration can affect the signal behavior, so allow the sensor to stabilize after powering it.
+
+Testing
+Upload the program.
+Open Serial Monitor at 9600 baud.
+Allow the PIR sensor to initialize.
+Move in front of the sensor.
+Confirm that the LED turns ON.
+Stop moving.
+Confirm that the LED eventually turns OFF.
+Move again before the timeout expires.
+Confirm that the timer is effectively extended.
+Troubleshooting
+LED never turns ON
+
+Check:
+
+PIR VCC
+PIR GND
+PIR OUT → D2
+LED polarity
+LED resistor
+D8 connection
+LED remains ON
+
+Possible causes:
+
+PIR is still detecting movement
+Sensor is being triggered repeatedly
+PIR module's time-delay setting is high
+Sensor has not completed its startup stabilization
+PIR behaves unpredictably
+
+Check:
+
+Power supply
+Loose connections
+Sensor placement
+Nearby movement or heat sources
+PIR sensitivity setting
+Safety
+
+Use only low-voltage components.
+
+Do not connect mains-powered lights directly to an Arduino GPIO.
+
+A real mains lighting system requires an appropriately rated, isolated switching device and safe electrical installation.
