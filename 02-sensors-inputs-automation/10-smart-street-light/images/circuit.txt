@@ -1,0 +1,31 @@
+PROJECT 10 — SMART STREET LIGHT
+
+
+                    +5V
+                     │
+                    LDR
+                     │
+                     ├──────── A0
+                     │
+                   10kΩ
+                     │
+                    GND
+
+
+D8  ── 220Ω ── LED 1 ── GND
+D9  ── 220Ω ── LED 2 ── GND
+D10 ── 220Ω ── LED 3 ── GND
+
+
+             LIGHT
+                ↓
+               LDR
+                ↓
+           ANALOG INPUT
+                ↓
+            THRESHOLD
+             ↙      ↘
+           DARK    BRIGHT
+            ↓         ↓
+       ALL LIGHTS   ALL LIGHTS
+           ON           OFF
