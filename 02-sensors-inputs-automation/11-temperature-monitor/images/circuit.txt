@@ -1,0 +1,39 @@
+PROJECT 11 — TEMPERATURE MONITOR
+
+                ARDUINO UNO
+             +---------------+
+             |               |
+       5V ---|---------------|--- LM35 VCC
+             |               |
+       A0 ---|---------------|--- LM35 OUTPUT
+             |               |
+      GND ---|---------------|--- LM35 GND
+             |               |
+             +---------------+
+
+             LM35
+          +---------+
+          |  _____  |
+          | |     | |
+          | | LM35| |
+          | |_____| |
+          +---------+
+             | | |
+             | | |
+            VCC OUT GND
+
+SIGNAL FLOW:
+
+Temperature
+     ↓
+   LM35
+     ↓
+ Analog Voltage
+     ↓
+    A0
+     ↓
+ Arduino ADC
+     ↓
+ Temperature Calculation
+     ↓
+ Serial Monitor
