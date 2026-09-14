@@ -1,0 +1,16 @@
+PROJECT 05 — LED CHASE
+
+             ARDUINO UNO
+
+D8  ── 220Ω ── LED 1 ── GND
+D9  ── 220Ω ── LED 2 ── GND
+D10 ── 220Ω ── LED 3 ── GND
+D11 ── 220Ω ── LED 4 ── GND
+D12 ── 220Ω ── LED 5 ── GND
+D13 ── 220Ω ── LED 6 ── GND
+
+
+LED SEQUENCE
+
+LED1 → LED2 → LED3 → LED4 → LED5 → LED6
+  ←      ←      ←      ←      ←      ←
