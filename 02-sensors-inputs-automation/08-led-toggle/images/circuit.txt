@@ -1,0 +1,29 @@
+PROJECT 08 — LED TOGGLE
+
+
+              ARDUINO UNO
+
+D2 ───────── PUSH BUTTON
+                 │
+                 │
+                GND
+
+
+D8 ───── 220Ω ───── LED ───── GND
+
+
+BUTTON EVENT:
+
+HIGH → LOW
+   ↓
+NEW PRESS
+   ↓
+TOGGLE STATE
+   ↓
+LED
+
+
+PRESS 1 → ON
+PRESS 2 → OFF
+PRESS 3 → ON
+PRESS 4 → OFF
