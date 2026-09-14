@@ -1,0 +1,47 @@
+PROJECT 14 — AUTOMATIC SECURITY ALARM
+
+
+                     PIR SENSOR
+                  +-------------+
+                  |             |
+             5V --| VCC         |
+            D2 ---| OUT         |
+            GND --| GND         |
+                  +------+------+
+                         |
+                         | MOTION
+                         ▼
+                  +-------------+
+                  | ARDUINO UNO |
+                  |             |
+                  | D2  INPUT   |
+                  |             |
+                  | D8  OUTPUT  |──── 220Ω ─── LED ─── GND
+                  |             |
+                  | D9  OUTPUT  |──────────── BUZZER ─ GND
+                  |             |
+                  +-------------+
+
+
+                 CONTROL LOGIC
+
+                   PIR INPUT
+                       │
+                       ▼
+                 Motion detected?
+                    /       \
+                  NO         YES
+                  │           │
+                  │           ▼
+                  │       Alarm Active
+                  │           │
+                  │      ┌────┴────┐
+                  │      ▼         ▼
+                  │    LED ON   BUZZER ON
+                  │      │         │
+                  │      └────┬────┘
+                  │           │
+                  │       5 seconds
+                  │           │
+                  └───────────▼
+                         Alarm OFF

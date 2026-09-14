@@ -1,0 +1,58 @@
+Operating Logic
+Motion detected
+      ↓
+Alarm activated
+      ↓
+LED ON + Buzzer ON
+      ↓
+5 seconds
+      ↓
+LED OFF + Buzzer OFF
+      ↓
+System armed again
+Testing
+Upload the program.
+Open Serial Monitor at 9600 baud.
+Allow the PIR sensor to stabilize.
+Move in front of the sensor.
+Verify that the LED and buzzer activate.
+Wait for the alarm timeout.
+Verify that both outputs turn OFF.
+Trigger the sensor again.
+Troubleshooting
+Alarm never activates
+
+Check:
+
+PIR VCC
+PIR GND
+PIR OUT → D2
+LED wiring
+Buzzer wiring
+PIR stabilization time
+Alarm activates repeatedly
+
+Possible causes:
+
+Continued movement in the PIR detection area
+PIR sensitivity too high
+PIR module time-delay configuration
+Sensor positioned toward a heat source
+Buzzer does not sound
+
+Check:
+
+Buzzer polarity
+Buzzer type
+D9 connection
+Ground connection
+
+If using a larger buzzer, use a suitable transistor driver.
+
+Safety
+
+This is a low-voltage educational alarm.
+
+Do not connect mains-powered sirens, lamps, or other high-voltage loads directly to Arduino GPIO pins.
+
+Use appropriate isolated switching hardware for real installations.
