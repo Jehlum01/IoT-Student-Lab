@@ -1,0 +1,31 @@
+ROJECT 07 — PUSH BUTTON LED CONTROL
+
+
+                    ARDUINO UNO
+
+                    D2
+                    │
+                    │
+              ┌─────┴─────┐
+              │   BUTTON  │
+              └─────┬─────┘
+                    │
+                   GND
+
+
+                    D8
+                    │
+                   220Ω
+                    │
+                    ▼
+                  LED
+                    │
+                    ▼
+                   GND
+
+
+BUTTON:
+Released → HIGH
+Pressed  → LOW
+
+INPUT → PROCESS → OUTPUT
