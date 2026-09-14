@@ -1,0 +1,43 @@
+PROJECT 12 — TEMPERATURE-CONTROLLED FAN
+
+                 ARDUINO UNO
+              +---------------+
+              |               |
+        5V ---|---------------|--- LM35 VCC
+              |               |
+        A0 ---|---------------|--- LM35 OUT
+              |               |
+       GND ---|---------------|--- LM35 GND
+              |               |
+        D8 ---|---- DRIVER ---|--------+
+              +---------------+        |
+                                       |
+                                  +----▼----+
+                                  | DC FAN  |
+                                  +----┬----+
+                                       |
+                                  External
+                                   Supply
+
+
+CONTROL FLOW
+
+       Temperature
+            │
+            ▼
+          LM35
+            │
+            ▼
+        Arduino A0
+            │
+            ▼
+     Temperature
+      Calculation
+            │
+            ▼
+      Threshold Logic
+       /           \
+   ≥ 30°C          ≤ 28°C
+      │                │
+      ▼                ▼
+   FAN ON           FAN OFF
