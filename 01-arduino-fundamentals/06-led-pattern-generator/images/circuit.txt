@@ -1,0 +1,27 @@
+PROJECT 06 — LED PATTERN GENERATOR
+
+                 ARDUINO UNO
+
+D2 ── 220Ω ── LED 1 ── GND
+D3 ── 220Ω ── LED 2 ── GND
+D4 ── 220Ω ── LED 3 ── GND
+D5 ── 220Ω ── LED 4 ── GND
+D6 ── 220Ω ── LED 5 ── GND
+D7 ── 220Ω ── LED 6 ── GND
+D8 ── 220Ω ── LED 7 ── GND
+D9 ── 220Ω ── LED 8 ── GND
+
+
+BINARY DISPLAY
+
+LED 8  LED 7  LED 6  LED 5  LED 4  LED 3  LED 2  LED 1
+ Bit7   Bit6   Bit5   Bit4   Bit3   Bit2   Bit1   Bit0
+
+
+Example:
+
+Decimal 5
+
+00000101
+
+OFF OFF OFF OFF OFF ON OFF ON
