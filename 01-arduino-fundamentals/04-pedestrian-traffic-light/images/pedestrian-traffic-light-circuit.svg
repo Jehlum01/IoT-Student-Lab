@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="white"/>
+
+  <text x="600" y="55" text-anchor="middle"
+        font-family="Arial" font-size="32" font-weight="bold">
+    Pedestrian Traffic Light
+  </text>
+
+  <text x="600" y="90" text-anchor="middle"
+        font-family="Arial" font-size="18">
+    Arduino Uno + 3 LEDs + Push Button
+  </text>
+
+  <!-- Arduino -->
+  <rect x="70" y="150" width="300" height="400"
+        rx="20" fill="#eeeeee" stroke="black" stroke-width="3"/>
+
+  <text x="220" y="200" text-anchor="middle"
+        font-family="Arial" font-size="28" font-weight="bold">
+    ARDUINO UNO
+  </text>
+
+  <text x="220" y="270" text-anchor="middle"
+        font-family="Arial" font-size="22">
+    D8 → Red
+  </text>
+
+  <text x="220" y="320" text-anchor="middle"
+        font-family="Arial" font-size="22">
+    D9 → Yellow
+  </text>
+
+  <text x="220" y="370" text-anchor="middle"
+        font-family="Arial" font-size="22">
+    D10 → Green
+  </text>
+
+  <text x="220" y="420" text-anchor="middle"
+        font-family="Arial" font-size="22">
+    D2 → Button
+  </text>
+
+  <text x="220" y="490" text-anchor="middle"
+        font-family="Arial" font-size="22">
+    GND
+  </text>
+
+  <!-- LED connections -->
+  <line x1="370" y1="270" x2="530" y2="270"
+        stroke="black" stroke-width="4"/>
+  <rect x="530" y="250" width="100" height="40"
+        fill="#eeeeee" stroke="black" stroke-width="2"/>
+  <text x="580" y="277" text-anchor="middle"
+        font-family="Arial" font-size="18">220Ω</text>
+  <line x1="630" y1="270" x2="760" y2="270"
+        stroke="black" stroke-width="4"/>
+  <circle cx="800" cy="270" r="35"
+          fill="red" stroke="black" stroke-width="3"/>
+  <text x="800" y="330" text-anchor="middle"
+        font-family="Arial" font-size="20">RED LED</text>
+
+  <line x1="370" y1="320" x2="530" y2="320"
+        stroke="black" stroke-width="4"/>
+  <rect x="530" y="300" width="100" height="40"
+        fill="#eeeeee" stroke="black" stroke-width="2"/>
+  <text x="580" y="327" text-anchor="middle"
+        font-family="Arial" font-size="18">220Ω</text>
+  <line x1="630" y1="320" x2="760" y2="320"
+        stroke="black" stroke-width="4"/>
+  <circle cx="800" cy="320" r="35"
+          fill="gold" stroke="black" stroke-width="3"/>
+  <text x="800" y="380" text-anchor="middle"
+        font-family="Arial" font-size="20">YELLOW LED</text>
+
+  <line x1="370" y1="370" x2="530" y2="370"
+        stroke="black" stroke-width="4"/>
+  <rect x="530" y="350" width="100" height="40"
+        fill="#eeeeee" stroke="black" stroke-width="2"/>
+  <text x="580" y="377" text-anchor="middle"
+        font-family="Arial" font-size="18">220Ω</text>
+  <line x1="630" y1="370" x2="760" y2="370"
+        stroke="black" stroke-width="4"/>
+  <circle cx="800" cy="370" r="35"
+          fill="limegreen" stroke="black" stroke-width="3"/>
+  <text x="800" y="430" text-anchor="middle"
+        font-family="Arial" font-size="20">GREEN LED</text>
+
+  <!-- Button -->
+  <line x1="370" y1="420" x2="590" y2="420"
+        stroke="black" stroke-width="4"/>
+
+  <rect x="590" y="385" width="180" height="70"
+        rx="10" fill="#eeeeee" stroke="black" stroke-width="3"/>
+
+  <text x="680" y="428" text-anchor="middle"
+        font-family="Arial" font-size="22" font-weight="bold">
+    PUSH BUTTON
+  </text>
+
+  <line x1="770" y1="420" x2="900" y2="420"
+        stroke="black" stroke-width="4"/>
+
+  <line x1="900" y1="420" x2="900" y2="500"
+        stroke="black" stroke-width="4"/>
+
+  <line x1="900" y1="500" x2="370" y2="500"
+        stroke="black" stroke-width="4"/>
+
+  <text x="920" y="505"
+        font-family="Arial" font-size="22">
+    GND
+  </text>
+
+  <text x="600" y="620" text-anchor="middle"
+        font-family="Arial" font-size="22" font-weight="bold">
+    INPUT_PULLUP: Button released = HIGH | Button pressed = LOW
+  </text>
+</svg>
