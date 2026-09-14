@@ -1,0 +1,34 @@
+PROJECT 09 — AUTOMATIC NIGHT LAMP
+
+
+                    +5V
+                     │
+                    LDR
+                     │
+                     ├──────────── A0
+                     │
+                   10kΩ
+                     │
+                    GND
+
+
+Arduino D8 ── 220Ω ── LED ── GND
+
+
+SYSTEM:
+
+       LIGHT
+          ↓
+         LDR
+          ↓
+    Voltage Divider
+          ↓
+        A0
+          ↓
+    analogRead()
+          ↓
+      Threshold
+       ↙      ↘
+    DARK     BRIGHT
+      ↓         ↓
+   LED ON     LED OFF
