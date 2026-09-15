@@ -1,0 +1,43 @@
+PROJECT 16 — DIGITAL COUNTER
+
+
+                         ARDUINO UNO
+                    ┌──────────────────┐
+                    │                  │
+              D2 ───┤ UP BUTTON        │
+              D3 ───┤ DOWN BUTTON      │
+                    │                  │
+              D8 ───┤ BIT 0            │
+              D9 ───┤ BIT 1            │
+             D10 ───┤ BIT 2            │
+             D11 ───┤ BIT 3            │
+                    │                  │
+             GND ───┤ GND              │
+                    └──────────────────┘
+
+
+          UP BUTTON                    DOWN BUTTON
+
+       D2 ─────┐                    D3 ─────┐
+               │                            │
+            [BUTTON]                     [BUTTON]
+               │                            │
+              GND                          GND
+
+
+             BINARY LED DISPLAY
+
+       D8 ── 220Ω ── LED ── GND    BIT 0
+       D9 ── 220Ω ── LED ── GND    BIT 1
+      D10 ── 220Ω ── LED ── GND    BIT 2
+      D11 ── 220Ω ── LED ── GND    BIT 3
+
+
+              EXAMPLE
+
+       Counter = 6
+
+       Binary = 0110
+
+       BIT 3   BIT 2   BIT 1   BIT 0
+         ●       ●       ·       ·
