@@ -1,0 +1,309 @@
+# Project 22 — Automatic Door — Mermaid Diagrams
+
+## 1. System Wiring / Architecture
+
+```mermaid
+flowchart LR
+    UNO["Arduino Uno"]
+
+    TRIG["D8"]
+    ECHO["D9"]
+    SIG["D10"]
+    V5["5V"]
+    GND["GND"]
+
+    SENSOR["HC-SR04<br/>Ultrasonic Sensor"]
+    SERVO["SG90<br/>Servo Motor"]
+    DOOR["Door Model"]
+    PERSON["Person / Object"]
+
+    UNO --> TRIG
+    UNO --> ECHO
+    UNO --> SIG
+    V5 --> SENSOR
+    GND --> SENSOR
+    V5 --> SERVO
+    GND --> SERVO
+
+    TRIG -->|"TRIG"| SENSOR
+    SENSOR -->|"ECHO"| ECHO
+    SIG -->|"Servo Signal"| SERVO
+    SERVO --> DOOR
+    PERSON -->|"Approaches"| SENSOR
+```
+
+---
+
+## 2. Wiring Connections
+
+```mermaid
+flowchart TB
+    UNO["Arduino Uno"]
+
+    UNO_D8["D8"]
+    UNO_D9["D9"]
+    UNO_D10["D10"]
+    UNO_5V["5V"]
+    UNO_GND["GND"]
+
+    SENSOR["HC-SR04"]
+
+    SENSOR_VCC["VCC"]
+    SENSOR_TRIG["TRIG"]
+    SENSOR_ECHO["ECHO"]
+    SENSOR_GND["GND"]
+
+    SERVO["SG90 Servo"]
+
+    SERVO_VCC["VCC"]
+    SERVO_SIG["Signal"]
+    SERVO_GND["GND"]
+
+    UNO_D8 --> SENSOR_TRIG
+    UNO_D9 --> SENSOR_ECHO
+    UNO_D10 --> SERVO_SIG
+
+    UNO_5V --> SENSOR_VCC
+    UNO_GND --> SENSOR_GND
+
+    UNO_5V --> SERVO_VCC
+    UNO_GND --> SERVO_GND
+```
+
+---
+
+## 3. Physical Arrangement
+
+```mermaid
+flowchart LR
+    PERSON["🚶 Person / Object"]
+    ZONE["Detection Zone"]
+    SENSOR["HC-SR04"]
+    ARDUINO["Arduino Uno"]
+    SERVO["SG90 Servo"]
+    DOOR["🚪 Door Model"]
+
+    PERSON -->|"Approaches"| ZONE
+    ZONE --> SENSOR
+    SENSOR -->|"Distance"| ARDUINO
+    ARDUINO -->|"D10 Servo Command"| SERVO
+    SERVO -->|"Mechanical Movement"| DOOR
+```
+
+---
+
+## 4. Main Control Logic
+
+```mermaid
+flowchart TD
+    START([Start])
+    INIT["Initialize Arduino<br/>Initialize HC-SR04<br/>Attach Servo"]
+    CLOSED["Door CLOSED"]
+    MEASURE["Measure Distance"]
+    DETECT{"Object detected?<br/>Distance below threshold"}
+    OPEN["Open Door"]
+    RESET["Reset / Start Timer"]
+    PRESENT{"Object still present?"}
+    WAIT["Wait / Keep Door Open"]
+    AWAY["Object has moved away"]
+    TIMER{"Has 3 seconds passed?"}
+    CLOSE["Close Door"]
+    CONTINUE["Continue Monitoring"]
+
+    START --> INIT
+    INIT --> CLOSED
+    CLOSED --> MEASURE
+    MEASURE --> DETECT
+
+    DETECT -->|"NO"| CONTINUE
+    CONTINUE --> MEASURE
+
+    DETECT -->|"YES"| OPEN
+    OPEN --> RESET
+    RESET --> PRESENT
+
+    PRESENT -->|"YES"| WAIT
+    WAIT --> MEASURE
+
+    PRESENT -->|"NO"| AWAY
+    AWAY --> TIMER
+
+    TIMER -->|"NO"| MEASURE
+    TIMER -->|"YES"| CLOSE
+    CLOSE --> CLOSED
+```
+
+---
+
+## 5. Simplified Student Flowchart
+
+```mermaid
+flowchart TD
+    A([Start]) --> B["Measure Distance"]
+    B --> C{"Object detected?"}
+
+    C -->|"NO"| B
+    C -->|"YES"| D["Open Door"]
+    D --> E["Reset Timer"]
+    E --> F{"Object still present?"}
+
+    F -->|"YES"| D
+    F -->|"NO"| G["Wait 3 Seconds"]
+    G --> H["Close Door"]
+    H --> B
+```
+
+---
+
+## 6. Sensor → Decision → Actuator
+
+```mermaid
+flowchart LR
+    S["HC-SR04<br/>SENSE"]
+    D["Arduino<br/>DECIDE"]
+    A["SG90<br/>ACT"]
+    M["Door<br/>MOVE"]
+
+    S -->|"Distance"| D
+    D -->|"Open / Close command"| A
+    A -->|"Mechanical motion"| M
+```
+
+---
+
+## 7. Door State Diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> Closed
+
+    Closed --> Open : Object detected
+    Open --> Open : Object still present
+    Open --> ClosingTimer : Object moves away
+    ClosingTimer --> Open : Object detected again
+    ClosingTimer --> Closed : 3 seconds elapsed
+
+    Closed --> [*]
+```
+
+---
+
+## 8. Automatic Door Sequence
+
+```mermaid
+sequenceDiagram
+    participant P as Person
+    participant S as HC-SR04
+    participant A as Arduino Uno
+    participant M as SG90 Servo
+    participant D as Door
+
+    P->>S: Approaches doorway
+    S->>A: Distance measurement
+    A->>A: Compare distance with threshold
+    A->>M: Open command
+    M->>D: Move door to OPEN position
+    D-->>P: Door is open
+
+    loop While object is present
+        S->>A: Measure distance
+        A->>A: Keep door open
+    end
+
+    P->>S: Moves away
+    S->>A: Object no longer detected
+    A->>A: Start 3-second closing timer
+
+    alt Object returns
+        S->>A: Object detected again
+        A->>M: Keep / reopen door
+        M->>D: Door remains open
+    else 3 seconds elapsed
+        A->>M: Close command
+        M->>D: Move door to CLOSED position
+    end
+```
+
+---
+
+## 9. External Servo Power Wiring
+
+Use this arrangement if the servo requires a separate suitable 5V supply.
+
+```mermaid
+flowchart LR
+    ARDUINO["Arduino Uno"]
+    SUPPLY["External 5V Supply"]
+    SERVO["SG90 Servo"]
+
+    ARDUINO_D10["D10"]
+    ARDUINO_GND["Arduino GND"]
+
+    SUPPLY_5V["External +5V"]
+    SUPPLY_GND["External GND"]
+
+    SERVO_VCC["Servo VCC"]
+    SERVO_GND["Servo GND"]
+    SERVO_SIG["Servo Signal"]
+
+    ARDUINO_D10 --> SERVO_SIG
+    SUPPLY_5V --> SERVO_VCC
+    SUPPLY_GND --> SERVO_GND
+    ARDUINO_GND --> SUPPLY_GND
+```
+
+> **Important:** The external supply must be suitable for the servo. Connect the external supply ground to Arduino GND so the servo signal has a common electrical reference.
+
+---
+
+## 10. Complete Project Architecture
+
+```mermaid
+flowchart TB
+    PERSON["Person / Object"]
+
+    SENSOR["HC-SR04<br/>Distance Sensor"]
+    INPUT["Distance Input"]
+
+    CONTROLLER["Arduino Uno<br/><br/>Distance Measurement<br/>Threshold Decision<br/>State Management<br/>Timer"]
+
+    ACTUATOR["SG90 Servo<br/>Actuator"]
+
+    DOOR["Automatic Door Model"]
+
+    FEEDBACK["Door State"]
+
+    PERSON --> SENSOR
+    SENSOR --> INPUT
+    INPUT --> CONTROLLER
+    CONTROLLER --> ACTUATOR
+    ACTUATOR --> DOOR
+    DOOR --> FEEDBACK
+    FEEDBACK --> CONTROLLER
+```
+
+---
+
+# Recommended Diagram
+
+For the main Project 22 README/Wiring document, use these three diagrams in this order:
+
+1. **Complete Project Architecture** — gives students the big picture.
+2. **Wiring Connections** — shows the electrical connections.
+3. **Main Control Logic** — explains how the automatic door behaves.
+
+The core concept is:
+
+```text
+PERSON
+   ↓
+HC-SR04
+   ↓
+DISTANCE
+   ↓
+ARDUINO DECISION
+   ↓
+SG90 SERVO
+   ↓
+DOOR
+```
