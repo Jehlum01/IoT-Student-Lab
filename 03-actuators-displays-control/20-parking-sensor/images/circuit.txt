@@ -1,0 +1,60 @@
+============================================================
+              PROJECT 20 — PARKING SENSOR
+============================================================
+
+                    ARDUINO UNO
+                 +--------------+
+                 |              |
+       TRIG -----| D8           |
+       ECHO -----| D9           |
+       BUZZER ---| D10          |
+       GREEN ----| D11          |
+       YELLOW ---| D12          |
+       RED ------| D13          |
+                 |              |
+                 | 5V       GND |
+                 +--------------+
+                   |          |
+                   |          |
+              +----+          +------------------+
+              |                                  |
+        +-----------+                       +-----------+
+        |  HC-SR04  |                       |  BUZZER   |
+        |           |                       |           |
+        | VCC -> 5V |                       | + -> D10  |
+        | GND -> GND|                       | - -> GND  |
+        | TRIG -> D8|                       +-----------+
+        | ECHO -> D9|
+        +-----------+
+
+       D11 ---- 220Ω ----> GREEN LED ----> GND
+       D12 ---- 220Ω ----> YELLOW LED ---> GND
+       D13 ---- 220Ω ----> RED LED ------> GND
+
+
+                 PARKING DISTANCE LOGIC
+
+              Object / Vehicle
+                     ↓
+              ┌─────────────┐
+              │   HC-SR04   │
+              └──────┬──────┘
+                     │
+                     ↓
+             Measure Distance
+                     │
+          ┌──────────┼──────────┐
+          ↓          ↓          ↓
+       > 50 cm    20–50 cm    ≤ 20 cm
+          │          │          │
+          ↓          ↓          ↓
+        GREEN      YELLOW       RED
+         ON          ON          ON
+       Buzzer      Slow beep   Fast beep
+
+
+SAFE       → Green LED + No buzzer
+CAUTION    → Yellow LED + Slow beep
+STOP       → Red LED + Fast beep
+
+============================================================
