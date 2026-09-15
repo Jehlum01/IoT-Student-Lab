@@ -1,0 +1,165 @@
+```
+```
+
+````
+# Project 17 — Reaction Timer Wiring
+
+## Components
+
+- Arduino Uno
+- Push button
+- LED
+- 220Ω resistor
+- Small active buzzer
+- Breadboard
+- Jumper wires
+
+## Connections
+
+### Push Button
+
+| Component | Arduino |
+|---|---|
+| Button side 1 | D2 |
+| Button side 2 | GND |
+
+The program uses:
+
+```cpp
+INPUT_PULLUP
+````
+
+Therefore:
+
+```
+```
+
+```
+Released → HIGH
+Pressed  → LOW
+```
+
+### LED
+
+```
+```
+
+```
+Arduino D8
+    ↓
+  220Ω
+    ↓
+LED anode
+LED cathode
+    ↓
+   GND
+```
+
+### Buzzer
+
+For a small active buzzer suitable for GPIO control:
+
+| BuzzerArduino |     |
+| ------------- | --- |
+| +             | D9  |
+| -             | GND |
+
+If the buzzer requires more current than the GPIO can safely supply, use a suitable transistor driver.
+
+## Circuit
+
+```
+```
+
+```
+                    ARDUINO UNO
+                 ┌───────────────┐
+                 │               │
+        D2 ──────┤ BUTTON INPUT  │
+                 │               │
+        D8 ──────┤ LED OUTPUT    │── 220Ω ── LED ── GND
+                 │               │
+        D9 ──────┤ BUZZER        │────────── BUZZER ── GND
+                 │               │
+       GND ──────┤ GND           │
+                 └───────────────┘
+
+
+BUTTON:
+
+D2 ───── BUTTON ───── GND
+```
+
+## Operation
+
+The system follows:
+
+```
+```
+
+```
+Press button
+     ↓
+Random waiting period
+     ↓
+LED + buzzer signal
+     ↓
+Start timer
+     ↓
+Player presses button
+     ↓
+Stop timer
+     ↓
+Display reaction time
+```
+
+## Testing
+
+1.  Upload the program. 
+2.  Open Serial Monitor at 9600 baud. 
+3.  Press the button. 
+4.  Wait for the signal. 
+5.  Press the button as quickly as possible. 
+6.  Read the reaction time. 
+7.  Repeat several times. 
+8.  Compare your results. 
+
+## Troubleshooting
+
+### Timer starts immediately
+
+Check the button wiring and INPUT\_PULLUP configuration.
+
+### Reaction time is extremely large
+
+Check whether the timer starts correctly when the signal occurs.
+
+### LED does not turn ON
+
+Check:
+
+-  LED polarity 
+-  220Ω resistor 
+-  D8 connection 
+-  GND 
+
+### Buzzer does not sound
+
+Check:
+
+-  Buzzer polarity 
+-  Buzzer type 
+-  D9 
+-  GND 
+
+## Safety
+
+Use only low-voltage components.
+
+Do not connect high-power buzzers or other loads directly to an Arduino GPIO without appropriate driver circuitry.
+
+```
+```
+
+```
+```
