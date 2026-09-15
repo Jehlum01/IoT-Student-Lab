@@ -1,0 +1,45 @@
+PROJECT 19 — ULTRASONIC DISTANCE METER
+
+
+                    HC-SR04
+                ┌─────────────┐
+                │             │
+          5V ───┤ VCC         │
+         D8 ────┤ TRIG        │
+         D9 ────┤ ECHO        │
+         GND ───┤ GND         │
+                └─────────────┘
+                       │
+                       │
+                       │ ULTRASONIC WAVE
+                       ▼
+                    OBJECT
+                       │
+                       │ REFLECTION
+                       ▼
+                ┌─────────────┐
+                │   HC-SR04   │
+                └─────────────┘
+
+
+                 ARDUINO UNO
+
+              ┌───────────────┐
+              │               │
+         D8 ──┤ TRIG          │
+         D9 ──┤ ECHO          │
+              │               │
+        5V ───┤ 5V            │
+       GND ───┤ GND           │
+              └───────────────┘
+
+
+MEASUREMENT:
+
+Sensor ───────────────► Object
+        Distance
+
+Sensor ◄─────────────── Object
+        Return path
+
+Total measured path = 2 × actual distance
