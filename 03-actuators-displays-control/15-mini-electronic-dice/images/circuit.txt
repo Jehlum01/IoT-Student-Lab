@@ -1,0 +1,54 @@
+PROJECT 15 — MINI ELECTRONIC DICE
+
+
+                         ARDUINO UNO
+
+                     ┌───────────────┐
+                     │               │
+              D2 ────┤ BUTTON INPUT  │
+                     │               │
+              D3 ────┤ LED 0         │
+              D4 ────┤ LED 1         │
+              D5 ────┤ LED 2         │
+              D6 ────┤ LED 3         │
+              D7 ────┤ LED 4         │
+              D8 ────┤ LED 5         │
+              D9 ────┤ LED 6         │
+                     │               │
+             GND ────┤ GND           │
+                     └───────────────┘
+
+
+BUTTON
+
+             D2
+              │
+              ├─────────────┐
+              │             │
+              │          [BUTTON]
+              │             │
+              └─────────────┴── GND
+
+
+LED ARRAY
+
+D3 ── 220Ω ── LED ── GND
+D4 ── 220Ω ── LED ── GND
+D5 ── 220Ω ── LED ── GND
+D6 ── 220Ω ── LED ── GND
+D7 ── 220Ω ── LED ── GND
+D8 ── 220Ω ── LED ── GND
+D9 ── 220Ω ── LED ── GND
+
+
+DICE DISPLAY
+
+       ●       ●
+
+           ●
+
+           ●
+
+       ●       ●
+
+           ●
