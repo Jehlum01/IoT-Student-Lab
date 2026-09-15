@@ -1,0 +1,30 @@
+PROJECT 18 — BUZZER ALARM
+
+
+                     ARDUINO UNO
+                  ┌───────────────┐
+                  │               │
+             D2 ──┤ BUTTON INPUT  │
+                  │               │
+             D8 ──┤ LED OUTPUT    │── 220Ω ── LED ── GND
+                  │               │
+             D9 ──┤ BUZZER OUTPUT │──────── BUZZER ── GND
+                  │               │
+            GND ──┤ GND           │
+                  └───────────────┘
+
+
+                    CONTROL FLOW
+
+                  BUTTON PRESS
+                       │
+                       ▼
+                 TOGGLE STATE
+                       │
+                ┌──────┴──────┐
+                ▼             ▼
+             ALARM ON      ALARM OFF
+                │             │
+           ┌────┴────┐    ┌───┴────┐
+           ▼         ▼    ▼        ▼
+         LED ON   BUZZER ON      OFF
