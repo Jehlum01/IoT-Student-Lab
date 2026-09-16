@@ -1,237 +1,209 @@
-# 27 — IoT LED Control
+# Project 27 — Wi-Fi Smart Light
 
-> **IoT Student Lab · Learning Project**
+> **ESP32 + Wi-Fi + Web Server + Relay + Low-Voltage DC Load**
 
-## 🎯 Project Overview
+## 🎯 Project Goal
 
-Control a physical output through a network connection.
+Build a basic IoT actuator system in which a browser controls a low-voltage DC light through an ESP32 and relay.
 
-This project is part of **Level 4 — IoT & Connectivity** and is designed around a hands-on engineering workflow:
+```text
+Browser
+   │ HTTP
+   ▼
+Wi-Fi Router
+   │ Wi-Fi
+   ▼
+ESP32 Web Server
+   │ GPIO 5
+   ▼
+Relay Module
+   │
+   ▼
+Low-Voltage DC Light
+```
 
-**Understand → Build → Program → Test → Troubleshoot → Improve**
-
-### Core focus
-
-**Remote control**
-
----
+This project extends the web-server concepts introduced in Project 26 by connecting the web interface to a real actuator. fileciteturn3file0L1-L5
 
 ## 🧠 Learning Objectives
 
-By completing this project, students should be able to:
+- Explain the role of a relay in an IoT actuator system.
+- Control a relay from an ESP32 GPIO.
+- Understand active-LOW relay logic.
+- Use HTTP routes such as `/`, `/on`, and `/off`.
+- Trace a command from a browser to a physical load.
+- Display network information on a web page.
+- Apply fault-isolation techniques.
+- Distinguish low-voltage classroom experiments from mains electrical systems.
 
-- Explain the purpose of the project and its components.
-- Identify the inputs, processing logic and outputs.
-- Build the circuit using the provided wiring information.
-- Understand the important parts of the program.
-- Test the system systematically.
-- Identify common hardware and software faults.
-- Suggest at least one improvement or extension.
+## 🧰 Components
 
----
-
-## 📊 Project Information
-
-| Item | Details |
+| Component | Purpose |
 |---|---|
-| Difficulty | Beginner / Intermediate |
-| Platform | ESP8266 NodeMCU / ESP32, as specified by the project |
-| Main concept | Remote control |
-| Estimated time | Instructor-defined |
-| Project type | Hands-on learning project |
+| ESP32 development board | Wi-Fi controller and web server |
+| 1-channel relay module | Electrically controlled switching |
+| Low-voltage DC lamp/load | Physical output |
+| Suitable external DC supply | Powers the load |
+| Breadboard & jumper wires | Prototyping |
+| USB cable | ESP32 power/programming |
 
----
+## 🔌 Pin Assignment
 
-## 🔧 Components
+| ESP32 | Relay |
+|---|---|
+| GPIO 5 | IN |
+| GND | GND |
+| Appropriate supply | VCC* |
 
-The exact bill of materials, component variants and quantities should be recorded here before the classroom build.
+*Follow the exact relay module specifications.*
 
-Typical components may include:
+The source assumes an active-LOW relay: `LOW = ON`, `HIGH = OFF`. fileciteturn3file0L48-L55
 
-- Microcontroller board
-- Breadboard
-- Jumper wires
-- Resistors
-- LEDs / indicators
-- Required sensor(s)
-- Required actuator(s)
-- Power supply appropriate for the circuit
+## 🌐 Web Interface
 
-> **Important:** Do not assume a pinout from a different board or module. Use the wiring table supplied for the exact hardware version used in class.
+| Route | Function |
+|---|---|
+| `/` | Display the control page |
+| `/on` | Turn the light ON |
+| `/off` | Turn the light OFF |
+| Other route | Return HTTP 404 |
 
----
+The page displays light state, SSID, IP address, RSSI, and relay GPIO.
 
-## 🔌 Wiring & Pin Configuration
-
-Create a project-specific wiring table here.
-
-| Component | Pin / Signal | Controller Pin | Purpose |
-|---|---|---|---|
-| Input / Sensor | Signal | TBD | Read system information |
-| Output / Actuator | Control | TBD | Control physical output |
-| Indicator | Signal | TBD | Show system state |
-| Power | VCC / GND | Appropriate supply | Power the module |
-
-**Before powering the circuit:** verify VCC, GND, signal wiring and voltage compatibility.
-
----
-
-## ⚙️ How It Works
-
-The system should be understood as a chain:
+## 🔄 Turn ON
 
 ```text
-INPUT / SENSOR
-      ↓
-MICROCONTROLLER
-      ↓
-DECISION / PROGRAM LOGIC
-      ↓
-OUTPUT / ACTUATOR
-      ↓
-USER / ENVIRONMENT
+ON button
+   ↓
+GET /on
+   ↓
+ESP32
+   ↓
+lightState = true
+   ↓
+GPIO 5 = LOW
+   ↓
+Relay ON
+   ↓
+Light ON
 ```
 
-Students should be able to explain what happens at every stage rather than treating the code as a black box.
+## 🔄 Turn OFF
 
----
+```text
+OFF button
+   ↓
+GET /off
+   ↓
+ESP32
+   ↓
+lightState = false
+   ↓
+GPIO 5 = HIGH
+   ↓
+Relay OFF
+   ↓
+Light OFF
+```
 
-## 💻 Code
+## 💻 Program Structure
 
-The source code for this project belongs in the project `code/` directory.
+```text
+setup()
+ ├─ Configure relay GPIO
+ ├─ Keep relay OFF during startup
+ ├─ Start Serial Monitor
+ ├─ Connect to Wi-Fi
+ ├─ Register routes
+ └─ Start web server
 
-Before uploading:
+loop()
+ └─ server.handleClient()
+```
 
-1. Select the correct board.
-2. Select the correct port.
-3. Install the required libraries.
-4. Verify the pin configuration.
-5. Read the code before uploading it.
-6. Upload and observe the result.
+The project registers `/`, `/on`, `/off`, and a not-found handler. fileciteturn3file0L343-L403
 
----
+## 🧪 Testing Checklist
 
-## 🧪 Testing Procedure
+- [ ] Relay wiring verified
+- [ ] Low-voltage DC load only
+- [ ] Relay starts OFF
+- [ ] Wi-Fi connects
+- [ ] IP address appears
+- [ ] Webpage loads
+- [ ] ON command activates relay
+- [ ] OFF command deactivates relay
+- [ ] Light follows relay state
 
-Use a controlled test sequence:
+## 🛠️ Troubleshooting
 
-1. Inspect the circuit with power disconnected.
-2. Check all connections.
-3. Power the board.
-4. Open Serial Monitor if the project uses serial output.
-5. Test each input independently.
-6. Test each output independently.
-7. Test the complete system.
-8. Record unexpected behaviour.
-9. Troubleshoot one variable at a time.
+| Symptom | Check |
+|---|---|
+| Relay always ON | Active-LOW logic, startup state, wiring |
+| Relay never activates | GPIO 5, VCC, GND, IN, trigger logic |
+| ESP32 resets | Power supply, relay noise, wiring |
+| Webpage unavailable | Wi-Fi connection and IP |
+| Relay works but light does not | Load-side wiring and supply |
 
----
+Use layered fault isolation:
 
-## ✅ Expected Result
+```text
+Browser → Network → HTTP → ESP32 → GPIO → Relay → Load
+```
 
-The completed system should respond to its defined inputs and produce the expected outputs.
+## 🔬 Experiments
 
-Record actual observations during the classroom test rather than assuming that a successful upload means the project is correct.
+### 1. Physical Button
 
----
+```text
+Physical Button ──┐
+                  ├── ESP32 ── Relay ── Light
+Browser ──────────┘
+```
 
-## ❌ Troubleshooting
+Compare local and network control.
 
-| Symptom | Possible Cause | What to Check |
-|---|---|---|
-| Nothing works | Power / GND problem | Supply, GND and wiring |
-| Output does not respond | Incorrect pin | Pin definitions and physical wiring |
-| Sensor value looks wrong | Wiring / calibration | Sensor supply, signal and expected range |
-| Program does not compile | Library / syntax issue | Board package and required libraries |
-| Behaviour is reversed | Active-high / active-low logic | Output logic and module type |
-| Works intermittently | Loose connection / power issue | Breadboard and power supply |
+### 2. Two Lights
 
----
+Add a second relay channel and independently control two low-voltage loads.
 
-## 🧩 Student Exercises
+### 3. Automatic Light
 
-### Exercise 1 — Explain
+Add an LDR:
 
-Explain the purpose of every component used in the circuit.
+```text
+LDR → ESP32 → Decision → Relay → Light
+```
 
-### Exercise 2 — Predict
+This introduces **SENSE → DECIDE → ACT** alongside remote control.
 
-Before running the program, predict what should happen for different input conditions.
+### 4. Manual + Wi-Fi Control
 
-### Exercise 3 — Debug
+Combine a physical button with browser control and define how both inputs update the light state.
 
-Introduce one controlled wiring or software mistake and diagnose it.
+## 🏆 Engineering Challenge
 
-### Exercise 4 — Modify
-
-Change one parameter, threshold, timing value or output behaviour and observe the result.
-
----
-
-## 🚀 Challenge
-
-Extend the project without changing its fundamental purpose.
-
-Possible directions:
-
-- Add another indicator.
-- Add a display.
-- Add a manual override.
-- Improve the user interface.
-- Add data logging.
-- Add another sensor.
-- Add an error state.
-- Convert the system into an IoT version where appropriate.
-
----
-
-## 📝 Reflection
-
-After completing the project, answer:
-
-1. What did I build?
-2. What was the most important concept?
-3. What component was hardest to understand?
-4. What problem did I encounter?
-5. How did I troubleshoot it?
-6. What would I improve?
-7. What real-world system is similar to this project?
-
----
-
-## 🏁 Learning Outcome
-
-A successful student should be able to **build, explain, test and modify** the system—not merely upload the program.
-
----
+Build a two-channel Wi-Fi smart-light controller with two relay outputs, two low-voltage loads, independent browser controls, status display, Wi-Fi information, and a clear webpage.
 
 ## ⚠️ Safety
 
-- Disconnect power before changing wiring.
-- Check polarity before powering components.
-- Avoid short circuits.
-- Use suitable power supplies.
-- Do not connect high-voltage mains directly to microcontroller circuits.
-- Use instructor supervision for motors, pumps and relay-based systems.
-- Follow the safety guidance for the exact hardware used.
+**Use low-voltage DC loads only.**
 
----
+Do not connect household AC/mains voltage to a breadboard or exposed classroom circuit. A relay module does not automatically make mains experimentation safe. fileciteturn3file0L1199-L1209
 
-## 📁 Recommended Project Structure
+## 📈 Curriculum Progression
 
 ```text
-27-project/
-├── README.md
-├── code/
-├── circuit/
-├── images/
-└── resources/
+Project 25 — Wi-Fi Connection
+          ↓
+Project 26 — Web Server
+          ↓
+Project 27 — Actuator Control
+          ↓
+Project 28 — Sensor Monitoring
+          ↓
+Project 29 — Network Alerts
+          ↓
+Project 30 — Multi-Device Automation
 ```
 
----
-
-## 🔗 Continue Learning
-
-After completing this project, continue to the next project in the course sequence.
-
-**Learn → Build → Experiment → Troubleshoot → Improve → Create**
+**Key distinction:** Project 26 teaches the web-server mechanism; Project 27 applies it to a real IoT actuator. fileciteturn3file0L1275-L1311
