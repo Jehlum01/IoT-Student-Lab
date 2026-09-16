@@ -1,237 +1,280 @@
-# 25 — Wi-Fi Connection
+# Project 25 — ESP32 Wi-Fi Fundamentals
 
-> **IoT Student Lab · Learning Project**
+> **Learning path:** Setup → Scan → Connect → Test → Wi-Fi Modes → Troubleshoot → IoT Control
 
-## 🎯 Project Overview
+## 🎯 Goal
+Learn to configure an ESP32 in Arduino IDE, verify its Wi-Fi hardware, scan networks, connect in Station (STA) mode, inspect IP/RSSI information, test LAN reachability, understand AP/AP+STA modes, and diagnose common failures.
 
-Connect an ESP board to a Wi-Fi network and understand the basic connection process.
+## 1. ESP32 + Arduino IDE Setup
 
-This project is part of **Level 4 — IoT & Connectivity** and is designed around a hands-on engineering workflow:
+```text
+Arduino IDE
+    ↓
+Preferences
+    ↓
+Additional Boards Manager URLs
+    ↓
+Espressif ESP32 package index
+    ↓
+Boards Manager
+    ↓
+Install "esp32" by Espressif Systems
+    ↓
+Select ESP32 board + USB/serial port
+    ↓
+Upload test sketch
+    ↓
+Serial Monitor
+```
 
-**Understand → Build → Program → Test → Troubleshoot → Improve**
+**Official stable package index:**
+`https://espressif.github.io/arduino-esp32/package_esp32_index.json`
 
-### Core focus
+Checklist:
+- [ ] Arduino IDE installed
+- [ ] ESP32 package URL added
+- [ ] `esp32` platform installed
+- [ ] Correct board selected
+- [ ] Correct serial port selected
+- [ ] Test sketch uploaded
+- [ ] Serial Monitor verified
 
-**ESP networking**
+## 2. Wi-Fi Basics
 
----
+```text
+                    Wi-Fi Network
 
-## 🧠 Learning Objectives
+             ┌─────────────────────┐
+             │   Wi-Fi Router/AP    │
+             └──────────┬──────────┘
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+           ESP32              Laptop/Phone
+        Wi-Fi Client           Wi-Fi Client
+```
 
-By completing this project, students should be able to:
-
-- Explain the purpose of the project and its components.
-- Identify the inputs, processing logic and outputs.
-- Build the circuit using the provided wiring information.
-- Understand the important parts of the program.
-- Test the system systematically.
-- Identify common hardware and software faults.
-- Suggest at least one improvement or extension.
-
----
-
-## 📊 Project Information
-
-| Item | Details |
+| Term | Meaning |
 |---|---|
-| Difficulty | Beginner / Intermediate |
-| Platform | ESP8266 NodeMCU / ESP32, as specified by the project |
-| Main concept | ESP networking |
-| Estimated time | Instructor-defined |
-| Project type | Hands-on learning project |
+| Wi-Fi | Wireless networking technology |
+| SSID | Wi-Fi network name |
+| Password | Network authentication credential |
+| AP | Access Point providing a Wi-Fi network |
+| STA | Station/client joining an AP |
+| IP address | Network-layer device address |
+| MAC address | Network-interface identifier |
+| Router | Device that forwards traffic between networks; commonly provides DHCP/NAT |
+| LAN | Local Area Network |
+| RSSI | Received signal strength indicator |
 
----
-
-## 🔧 Components
-
-The exact bill of materials, component variants and quantities should be recorded here before the classroom build.
-
-Typical components may include:
-
-- Microcontroller board
-- Breadboard
-- Jumper wires
-- Resistors
-- LEDs / indicators
-- Required sensor(s)
-- Required actuator(s)
-- Power supply appropriate for the circuit
-
-> **Important:** Do not assume a pinout from a different board or module. Use the wiring table supplied for the exact hardware version used in class.
-
----
-
-## 🔌 Wiring & Pin Configuration
-
-Create a project-specific wiring table here.
-
-| Component | Pin / Signal | Controller Pin | Purpose |
-|---|---|---|---|
-| Input / Sensor | Signal | TBD | Read system information |
-| Output / Actuator | Control | TBD | Control physical output |
-| Indicator | Signal | TBD | Show system state |
-| Power | VCC / GND | Appropriate supply | Power the module |
-
-**Before powering the circuit:** verify VCC, GND, signal wiring and voltage compatibility.
-
----
-
-## ⚙️ How It Works
-
-The system should be understood as a chain:
+Local communication does not necessarily require Internet access:
 
 ```text
-INPUT / SENSOR
-      ↓
-MICROCONTROLLER
-      ↓
-DECISION / PROGRAM LOGIC
-      ↓
-OUTPUT / ACTUATOR
-      ↓
-USER / ENVIRONMENT
+ESP32 ── Wi-Fi Router ── Laptop
+          LOCAL LAN
 ```
 
-Students should be able to explain what happens at every stage rather than treating the code as a black box.
-
----
-
-## 💻 Code
-
-The source code for this project belongs in the project `code/` directory.
-
-Before uploading:
-
-1. Select the correct board.
-2. Select the correct port.
-3. Install the required libraries.
-4. Verify the pin configuration.
-5. Read the code before uploading it.
-6. Upload and observe the result.
-
----
-
-## 🧪 Testing Procedure
-
-Use a controlled test sequence:
-
-1. Inspect the circuit with power disconnected.
-2. Check all connections.
-3. Power the board.
-4. Open Serial Monitor if the project uses serial output.
-5. Test each input independently.
-6. Test each output independently.
-7. Test the complete system.
-8. Record unexpected behaviour.
-9. Troubleshoot one variable at a time.
-
----
-
-## ✅ Expected Result
-
-The completed system should respond to its defined inputs and produce the expected outputs.
-
-Record actual observations during the classroom test rather than assuming that a successful upload means the project is correct.
-
----
-
-## ❌ Troubleshooting
-
-| Symptom | Possible Cause | What to Check |
-|---|---|---|
-| Nothing works | Power / GND problem | Supply, GND and wiring |
-| Output does not respond | Incorrect pin | Pin definitions and physical wiring |
-| Sensor value looks wrong | Wiring / calibration | Sensor supply, signal and expected range |
-| Program does not compile | Library / syntax issue | Board package and required libraries |
-| Behaviour is reversed | Active-high / active-low logic | Output logic and module type |
-| Works intermittently | Loose connection / power issue | Breadboard and power supply |
-
----
-
-## 🧩 Student Exercises
-
-### Exercise 1 — Explain
-
-Explain the purpose of every component used in the circuit.
-
-### Exercise 2 — Predict
-
-Before running the program, predict what should happen for different input conditions.
-
-### Exercise 3 — Debug
-
-Introduce one controlled wiring or software mistake and diagnose it.
-
-### Exercise 4 — Modify
-
-Change one parameter, threshold, timing value or output behaviour and observe the result.
-
----
-
-## 🚀 Challenge
-
-Extend the project without changing its fundamental purpose.
-
-Possible directions:
-
-- Add another indicator.
-- Add a display.
-- Add a manual override.
-- Improve the user interface.
-- Add data logging.
-- Add another sensor.
-- Add an error state.
-- Convert the system into an IoT version where appropriate.
-
----
-
-## 📝 Reflection
-
-After completing the project, answer:
-
-1. What did I build?
-2. What was the most important concept?
-3. What component was hardest to understand?
-4. What problem did I encounter?
-5. How did I troubleshoot it?
-6. What would I improve?
-7. What real-world system is similar to this project?
-
----
-
-## 🏁 Learning Outcome
-
-A successful student should be able to **build, explain, test and modify** the system—not merely upload the program.
-
----
-
-## ⚠️ Safety
-
-- Disconnect power before changing wiring.
-- Check polarity before powering components.
-- Avoid short circuits.
-- Use suitable power supplies.
-- Do not connect high-voltage mains directly to microcontroller circuits.
-- Use instructor supervision for motors, pumps and relay-based systems.
-- Follow the safety guidance for the exact hardware used.
-
----
-
-## 📁 Recommended Project Structure
+## 3. First Wi-Fi Test — Scan Networks
 
 ```text
-25-project/
-├── README.md
-├── code/
-├── circuit/
-├── images/
-└── resources/
+ESP32
+  ↓
+Scan nearby networks
+  ↓
+SSID + RSSI + Security + Channel
+  ↓
+Serial Monitor
 ```
 
----
+Example:
 
-## 🔗 Continue Learning
+```text
+Scanning for Wi-Fi networks...
 
-After completing this project, continue to the next project in the course sequence.
+Network 1
+SSID: HomeWiFi
+RSSI: -48 dBm
 
-**Learn → Build → Experiment → Troubleshoot → Improve → Create**
+Network 2
+SSID: SchoolLab
+RSSI: -67 dBm
+
+Network 3
+SSID: MobileHotspot
+RSSI: -81 dBm
+```
+
+For negative dBm values, a value closer to zero generally indicates a stronger received signal.
+
+## 4. Connect ESP32 to Wi-Fi
+
+```cpp
+#include <WiFi.h>
+
+const char* SSID = "YOUR_WIFI_NAME";
+const char* PASSWORD = "YOUR_WIFI_PASSWORD";
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(SSID, PASSWORD);
+
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWi-Fi connected!");
+  Serial.print("SSID: "); Serial.println(SSID);
+  Serial.print("IP Address: "); Serial.println(WiFi.localIP());
+  Serial.print("Signal Strength: ");
+  Serial.print(WiFi.RSSI()); Serial.println(" dBm");
+}
+
+void loop() {}
+```
+
+Expected:
+
+```text
+Connecting.....
+Wi-Fi connected!
+
+SSID: SchoolLab
+IP Address: 192.168.1.42
+Signal Strength: -53 dBm
+```
+
+Concept:
+
+```text
+SSID + Password → WiFi.begin()
+                 ↓
+       Authentication/association
+                 ↓
+          Network configuration
+                 ↓
+             IP address
+```
+
+## 5. How to Test Wi-Fi
+
+### Test A — Serial Monitor
+Check `WiFi.status()`, `WiFi.localIP()`, and `WiFi.RSSI()`.
+
+### Test B — Ping
+
+```bash
+ping 192.168.1.42
+```
+
+Replace the example IP with the ESP32's actual address.
+
+```text
+ESP32 connected → ESP32 has IP → Computer reaches IP → LAN path verified
+```
+
+A failed ping does not always mean Wi-Fi is broken; firewall, client isolation, VLANs and router policy can block ICMP.
+
+### Test C — Disconnect/reconnect
+Turn Wi-Fi off, restart the router, move the ESP32 away from the AP, restore connectivity, and observe recovery.
+
+## 6. ESP32 Wi-Fi Modes
+
+### STA — Station
+
+ESP32 joins an existing network.
+
+```text
+Wi-Fi Router
+     │
+    Wi-Fi
+     ↓
+   ESP32
+```
+
+```cpp
+WiFi.mode(WIFI_STA);
+```
+
+### AP — Access Point
+
+ESP32 creates its own network.
+
+```text
+             ESP32 AP
+             /               Phone     Laptop
+```
+
+```cpp
+WiFi.mode(WIFI_AP);
+WiFi.softAP("ESP32-Student-Lab", "12345678");
+```
+
+### AP + STA
+
+ESP32 joins an existing network and also creates an AP.
+
+```text
+Router ──→ ESP32 ←── Phone/Laptop
+            │
+          AP + STA
+```
+
+```cpp
+WiFi.mode(WIFI_AP_STA);
+```
+
+## 7. Mode Comparison
+
+| Mode | Joins router/AP? | Creates network? | Typical use |
+|---|---:|---:|---|
+| STA | ✅ | ❌ | LAN/Internet IoT |
+| AP | ❌ | ✅ | Direct ESP32 control |
+| AP + STA | ✅ | ✅ | Advanced networking |
+
+## 8. Troubleshooting Lab
+
+### Cannot find network
+Check SSID, compatible Wi-Fi band, signal strength and AP availability.
+
+### Connects but no IP
+Investigate DHCP/network configuration.
+
+### Has IP but ping fails
+Check correct IP, same reachable LAN, firewall, client isolation and VLAN/network boundaries.
+
+### Disconnects repeatedly
+Check RSSI, power supply, interference, AP stability and reconnect logic.
+
+## 9. Mini Challenges
+
+1. Scan nearby networks and sort results by RSSI.
+2. Display SSID, IP, RSSI and MAC.
+3. Connect automatically to one of two known networks.
+4. Create an ESP32 AP and connect a phone.
+5. Build:
+
+```text
+Phone → ESP32 AP → ESP32 GPIO → LED
+```
+
+This is the bridge to browser-based ESP32 control.
+
+## Learning Checklist
+
+- [ ] Install ESP32 support
+- [ ] Select board and port
+- [ ] Upload a test sketch
+- [ ] Scan Wi-Fi
+- [ ] Read SSID/RSSI/security
+- [ ] Connect in STA mode
+- [ ] Read IP address
+- [ ] Test LAN reachability
+- [ ] Understand AP and AP+STA
+- [ ] Diagnose a deliberate Wi-Fi failure
+
+## Official References
+- https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html
+- https://docs.espressif.com/projects/arduino-esp32/en/latest/api/wifi.html

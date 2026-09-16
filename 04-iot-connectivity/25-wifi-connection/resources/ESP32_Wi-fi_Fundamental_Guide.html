@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IoT Student Lab — ESP32 Wi-Fi & Networking Fundamentals</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              100: '#cffafe',
+              500: '#06b6d4',
+              600: '#0891b2',
+              700: '#0e7490',
+            },
+            board: {
+              dark: '#0f172a',
+              card: '#1e293b',
+              chip: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar for terminal & code blocks */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Pulse animation for packet simulation */
+    @keyframes packetFlow {
+      0% { transform: translateX(0) scale(0.8); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateX(180px) scale(0.8); opacity: 0; }
+    }
+    .packet-dot {
+      animation: packetFlow 1.6s infinite ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-900 text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-slate-900 min-h-screen">
+
+  <!-- Toast Notification Overlay -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-cyan-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-cyan-400/30 text-sm font-medium">
+    <i data-lucide="check-circle" class="w-5 h-5 text-cyan-200"></i>
+    <span id="toast-message">Copied to clipboard!</span>
+  </div>
+
+  <!-- Main Navigation Header -->
+  <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-slate-900/85 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="cpu" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <span class="text-xs uppercase tracking-widest font-bold text-cyan-400 block">IoT Student Lab</span>
+          <h1 class="text-base font-bold text-slate-100 leading-tight">ESP32 Wi-Fi &amp; Networking Primer</h1>
+        </div>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-slate-400">
+        <a href="#section-ide" class="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">1. IDE Setup</a>
+        <a href="#section-concepts" class="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">2. Concepts</a>
+        <a href="#section-simulator" class="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors text-cyan-400">3. Live Sim</a>
+        <a href="#section-code" class="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">4. Code Sketches</a>
+        <a href="#section-troubleshooting" class="px-3 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">5. Diagnostics</a>
+      </nav>
+
+      <!-- Quick Action -->
+      <div class="flex items-center gap-2">
+        <button onclick="scrollToSection('section-simulator')" class="text-xs font-semibold px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-lg shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5 active:scale-95">
+          <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Test In Simulator
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden pt-12 pb-16 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-b border-slate-800/80">
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold bg-cyan-950/60 text-cyan-300 border border-cyan-800/50 mb-6">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        Zero to Connected IoT Guide
+      </div>
+      <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
+        Mastering <span class="bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">ESP32 Wi-Fi</span> &amp; Local Networking
+      </h2>
+      <p class="text-base sm:text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed mb-8">
+        Learn how the ESP32 discovers access points, negotiates DHCP addresses, handles TCP/IP requests, and bridges microcontrollers to local browsers and web dashboards.
+      </p>
+
+      <!-- Stat Badges -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-left">
+          <span class="text-xs text-slate-400 block font-medium">Radio Frequency</span>
+          <span class="text-lg font-bold text-white">2.4 GHz Only</span>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-left">
+          <span class="text-xs text-slate-400 block font-medium">Standard Roles</span>
+          <span class="text-lg font-bold text-cyan-400">STA / AP / Both</span>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-left">
+          <span class="text-xs text-slate-400 block font-medium">IP Stack</span>
+          <span class="text-lg font-bold text-white">LwIP (TCP/IP)</span>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-left">
+          <span class="text-xs text-slate-400 block font-medium">Tx Peak Current</span>
+          <span class="text-lg font-bold text-amber-400">~500 mA</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Wrapper -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-20">
+
+    <!-- ==========================================
+         SECTION 1: ARDUINO IDE SETUP
+         ========================================== -->
+    <section id="section-ide" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center text-sm">
+          1
+        </div>
+        <h3 class="text-2xl font-bold text-white">ESP32 + Arduino IDE Board Configuration</h3>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Step instructions -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6">
+            <h4 class="text-base font-semibold text-white mb-3 flex items-center gap-2">
+              <i data-lucide="list-ordered" class="w-4 h-4 text-cyan-400"></i> Step-by-Step Installation Flow
+            </h4>
+            <ol class="space-y-3.5 text-sm text-slate-300">
+              <li class="flex items-start gap-3">
+                <span class="w-5 h-5 rounded-full bg-slate-700 text-xs font-mono flex items-center justify-center flex-shrink-0 mt-0.5 text-slate-300">1</span>
+                <div>
+                  <strong class="text-white">Download Arduino IDE 2.x</strong> from the official website and launch it.
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="w-5 h-5 rounded-full bg-slate-700 text-xs font-mono flex items-center justify-center flex-shrink-0 mt-0.5 text-slate-300">2</span>
+                <div>
+                  Open <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-xs font-mono text-cyan-300">File</kbd> &rarr; <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-xs font-mono text-cyan-300">Preferences</kbd> (or <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-xs font-mono">Cmd + ,</kbd> on macOS).
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="w-5 h-5 rounded-full bg-slate-700 text-xs font-mono flex items-center justify-center flex-shrink-0 mt-0.5 text-slate-300">3</span>
+                <div>
+                  Locate <strong>Additional boards manager URLs</strong> field and paste the official Espressif JSON repository link below.
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="w-5 h-5 rounded-full bg-slate-700 text-xs font-mono flex items-center justify-center flex-shrink-0 mt-0.5 text-slate-300">4</span>
+                <div>
+                  Go to <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-xs font-mono text-cyan-300">Tools</kbd> &rarr; <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-xs font-mono text-cyan-300">Board</kbd> &rarr; <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-xs font-mono">Boards Manager...</kbd>, search for <code class="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">esp32</code> and click <strong>Install</strong> (Espressif Systems).
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="w-5 h-5 rounded-full bg-slate-700 text-xs font-mono flex items-center justify-center flex-shrink-0 mt-0.5 text-slate-300">5</span>
+                <div>
+                  Select your board (e.g., <span class="text-white font-medium">ESP32 Dev Module</span> or <span class="text-white font-medium">NodeMCU-32S</span>) and pick the active COM / ttyUSB port.
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <!-- Package URL Box -->
+          <div class="bg-gradient-to-r from-slate-900 via-slate-800/80 to-slate-900 border border-cyan-500/30 rounded-2xl p-5 shadow-lg">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i> Official Espressif Package URL
+              </span>
+              <span class="text-[11px] text-slate-400">Stable Release</span>
+            </div>
+            <div class="flex items-center gap-2 bg-slate-950/80 p-2.5 rounded-xl border border-slate-700/80">
+              <input id="espressif-url" type="text" readonly value="https://espressif.github.io/arduino-esp32/package_esp32_index.json" class="bg-transparent text-xs sm:text-sm font-mono text-slate-200 w-full focus:outline-none selection:bg-cyan-500 selection:text-slate-900 cursor-text">
+              <button onclick="copyToClipboard('espressif-url', 'Espressif package URL')" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white text-xs font-medium flex items-center gap-1.5 transition-all flex-shrink-0">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Port and Driver Callout -->
+        <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mb-4">
+              <i data-lucide="usb" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-base font-bold text-white mb-2">USB Drivers Check</h4>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">
+              If your COM port doesn't show up in Arduino IDE, your operating system needs the USB-to-UART bridge chip driver:
+            </p>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/50 border border-slate-800">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <strong>CP2102:</strong> Silicon Labs driver
+              </li>
+              <li class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/50 border border-slate-800">
+                <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                <strong>CH340 / CH341:</strong> WCH driver
+              </li>
+            </ul>
+          </div>
+          <div class="mt-4 p-3 rounded-xl bg-cyan-950/30 border border-cyan-900/40 text-[11px] text-cyan-300 flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4 flex-shrink-0 text-cyan-400"></i>
+            <span>Baud rate standard for Wi-Fi sketches is <strong>115200 baud</strong>.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 2: WI-FI CORE CONCEPTS
+         ========================================== -->
+    <section id="section-concepts" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center text-sm">
+          2
+        </div>
+        <h3 class="text-2xl font-bold text-white">Wi-Fi Architecture &amp; Fundamentals</h3>
+      </div>
+
+      <!-- Mode Comparison Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Station Mode -->
+        <div class="bg-slate-800/40 border border-slate-800 hover:border-cyan-500/40 transition-all rounded-2xl p-5 relative group">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">WIFI_STA</span>
+            <span class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i> Most Common
+            </span>
+          </div>
+          <h4 class="text-lg font-bold text-white mb-2">Station Mode (STA)</h4>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            The ESP32 acts as a wireless client (like a smartphone or laptop) and associates with an existing Wi-Fi router.
+          </p>
+          <!-- Mini ASCII/Visual representation -->
+          <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-center font-mono text-xs text-slate-300">
+            [Wi-Fi Router] <span class="text-cyan-400">&larr;RF&rarr;</span> [ESP32 Client]
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+            <span class="text-slate-300 font-medium">Use case:</span> Publishing sensor data to cloud servers or home assistant over LAN.
+          </div>
+        </div>
+
+        <!-- Access Point Mode -->
+        <div class="bg-slate-800/40 border border-slate-800 hover:border-purple-500/40 transition-all rounded-2xl p-5 relative group">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-purple-950 text-purple-400 border border-purple-800">WIFI_AP</span>
+            <span class="text-[11px] text-purple-400 font-semibold">Routerless</span>
+          </div>
+          <h4 class="text-lg font-bold text-white mb-2">Access Point (AP)</h4>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            The ESP32 broadcasts its own Wi-Fi beacon (SSID). Nearby smartphones connect directly to the ESP32 with zero external router.
+          </p>
+          <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-center font-mono text-xs text-slate-300">
+            [ESP32 Hotspot] <span class="text-purple-400">&larr;RF&rarr;</span> [Phone/Laptop]
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+            <span class="text-slate-300 font-medium">Use case:</span> Initial device provisioning, field configurations, remote RC cars.
+          </div>
+        </div>
+
+        <!-- Hybrid Mode -->
+        <div class="bg-slate-800/40 border border-slate-800 hover:border-amber-500/40 transition-all rounded-2xl p-5 relative group">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">WIFI_AP_STA</span>
+            <span class="text-[11px] text-amber-400 font-semibold">Dual Mode</span>
+          </div>
+          <h4 class="text-lg font-bold text-white mb-2">Dual Mode (AP + STA)</h4>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Simultaneously maintains an uplink connection to the local LAN while broadcasting a setup SSID for new peers.
+          </p>
+          <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-center font-mono text-xs text-slate-300">
+            [Router] &harr; [ESP32 Node] &harr; [Phone]
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+            <span class="text-slate-300 font-medium">Use case:</span> Wi-Fi network range extenders, Wi-Fi mesh repeaters, captive portal fallback.
+          </div>
+        </div>
+      </div>
+
+      <!-- Essential Glossary & RSSI Visualizer -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Glossary grid -->
+        <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6">
+          <h4 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <i data-lucide="book-open" class="w-4 h-4 text-cyan-400"></i> Core Networking Vocabulary
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-cyan-300 font-bold block mb-1">SSID</span>
+              <span class="text-slate-400 leading-snug">Service Set Identifier. The human-readable name of the wireless broadcast (e.g. "Lab_WiFi").</span>
+            </div>
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-cyan-300 font-bold block mb-1">MAC Address</span>
+              <span class="text-slate-400 leading-snug">Unique 48-bit hardware identifier burned into ESP32 eFuse (e.g. <code class="text-slate-300">24:6F:28:B2:7A:1C</code>).</span>
+            </div>
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-cyan-300 font-bold block mb-1">IP Address</span>
+              <span class="text-slate-400 leading-snug">Logical LAN address assigned dynamically by the router's DHCP server (e.g. <code class="text-slate-300">192.168.1.42</code>).</span>
+            </div>
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-cyan-300 font-bold block mb-1">2.4 GHz vs 5.0 GHz</span>
+              <span class="text-slate-400 leading-snug font-medium text-amber-300/90"><strong class="text-amber-400">Critical:</strong> ESP32 WROOM only supports 2.4 GHz radios. 5 GHz Wi-Fi will never be seen.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RSSI Signal Gauge Meter -->
+        <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h4 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+              <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i> RSSI Signal Strength Breakdown
+            </h4>
+            <p class="text-xs text-slate-400 mb-4">
+              RSSI (Received Signal Strength Indicator) is measured in negative decibel milliwatts (dBm). Closer to 0 means stronger signal.
+            </p>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-emerald-400 font-semibold">-30 to -60 dBm</span>
+                  <span class="text-slate-400">Excellent (High throughput, reliable)</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full w-[90%]"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-cyan-400 font-semibold">-60 to -75 dBm</span>
+                  <span class="text-slate-400">Good / Acceptable for IoT</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-cyan-500 to-sky-400 rounded-full w-[65%]"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-amber-400 font-semibold">-75 to -85 dBm</span>
+                  <span class="text-slate-400">Weak (Frequent packet dropouts)</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full w-[35%]"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-mono mb-1">
+                  <span class="text-rose-400 font-semibold">&lt; -88 dBm</span>
+                  <span class="text-slate-400">Unusable (Disconnections)</span>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden">
+                  <div class="h-full bg-rose-500 rounded-full w-[15%]"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-400 flex items-center justify-between">
+            <span>Query in code: <code class="text-cyan-300 font-mono">WiFi.RSSI()</code></span>
+            <span class="text-[11px] font-mono text-slate-500">Unit: dBm</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 3: INTERACTIVE WORKBENCH SIMULATOR
+         ========================================== -->
+    <section id="section-simulator" class="scroll-mt-24">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center text-sm">
+            3
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold text-white">Interactive ESP32 Wi-Fi Workbench</h3>
+            <p class="text-xs text-slate-400">Run realistic firmware operations in-browser before writing C++ code</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700">
+          <span class="text-xs font-medium text-slate-400 px-2">Simulation Mode:</span>
+          <button id="sim-mode-sta" onclick="setSimMode('STA')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-cyan-600 text-white transition-all">Station (STA)</button>
+          <button id="sim-mode-ap" onclick="setSimMode('AP')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:text-white transition-all">Access Point (AP)</button>
+        </div>
+      </div>
+
+      <!-- Simulator Container -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+
+        <!-- Left Column: Interactive Topology Diagram & Controls -->
+        <div class="lg:col-span-6 space-y-6">
+          
+          <!-- Virtual Topology Canvas -->
+          <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 relative min-h-[260px] flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/80 pb-2">
+              <span class="font-mono flex items-center gap-1.5">
+                <span id="topology-indicator" class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                <span id="topology-title">Local Area Network (STA Mode)</span>
+              </span>
+              <span id="link-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                DISCONNECTED
+              </span>
+            </div>
+
+            <!-- Visual Nodes Diagram -->
+            <div class="relative py-6 flex items-center justify-between px-2 sm:px-6">
+              
+              <!-- Node 1: Router or AP -->
+              <div id="node-router" class="flex flex-col items-center text-center z-10">
+                <div class="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-300 shadow-md transition-colors" id="router-box">
+                  <i data-lucide="router" class="w-7 h-7"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-200 mt-2 block" id="router-label">HomeRouter_2.4G</span>
+                <span class="text-[10px] font-mono text-slate-500">192.168.1.1</span>
+              </div>
+
+              <!-- Connecting Link Line 1 -->
+              <div class="flex-1 h-0.5 bg-slate-800 relative mx-2 flex items-center justify-center">
+                <div id="packet-1" class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] absolute hidden"></div>
+                <span id="link-rate-1" class="text-[9px] font-mono text-slate-600 absolute -top-4">802.11 b/g/n</span>
+              </div>
+
+              <!-- Node 2: ESP32 -->
+              <div class="flex flex-col items-center text-center z-10">
+                <div class="w-16 h-16 rounded-2xl bg-slate-800 border-2 border-cyan-500/50 flex flex-col items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/10 relative transition-all" id="esp-box">
+                  <i data-lucide="cpu" class="w-7 h-7"></i>
+                  <!-- Virtual LED GPIO5 -->
+                  <span id="virtual-led" class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-slate-700 border-2 border-slate-900 transition-colors" title="GPIO 5 LED"></span>
+                </div>
+                <span class="text-xs font-bold text-white mt-2 block">ESP32 DevKit</span>
+                <span id="esp-ip-display" class="text-[10px] font-mono text-cyan-400">0.0.0.0</span>
+              </div>
+
+              <!-- Connecting Link Line 2 -->
+              <div class="flex-1 h-0.5 bg-slate-800 relative mx-2 flex items-center justify-center">
+                <div id="packet-2" class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] absolute hidden"></div>
+                <span id="link-rate-2" class="text-[9px] font-mono text-slate-600 absolute -top-4">HTTP :80</span>
+              </div>
+
+              <!-- Node 3: Laptop/Student Device -->
+              <div class="flex flex-col items-center text-center z-10">
+                <div class="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-slate-300 shadow-md">
+                  <i data-lucide="laptop" class="w-7 h-7"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-200 mt-2 block">Student PC</span>
+                <span class="text-[10px] font-mono text-slate-500">192.168.1.105</span>
+              </div>
+
+            </div>
+
+            <!-- Simulated RSSI slider -->
+            <div class="mt-2 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-2">
+                <i data-lucide="wifi" class="w-4 h-4 text-cyan-400"></i>
+                <label for="distance-slider" class="text-xs text-slate-400">Simulated Distance / RSSI:</label>
+              </div>
+              <div class="flex items-center gap-3">
+                <input id="distance-slider" type="range" min="-95" max="-35" value="-58" class="w-28 sm:w-36 accent-cyan-400 cursor-pointer" oninput="updateRssi(this.value)">
+                <span id="rssi-val" class="text-xs font-mono font-bold text-cyan-400 w-16 text-right">-58 dBm</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons Control Strip -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <button onclick="simScanNetworks()" class="p-3 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 flex flex-col items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="radar" class="w-4 h-4 text-cyan-400"></i>
+              <span>1. Scan Air</span>
+            </button>
+
+            <button id="btn-connect" onclick="simToggleConnect()" class="p-3 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all shadow-lg shadow-cyan-600/20">
+              <i data-lucide="plug-zap" class="w-4 h-4"></i>
+              <span id="btn-connect-label">2. Connect Wi-Fi</span>
+            </button>
+
+            <button onclick="simPingEsp()" class="p-3 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 flex flex-col items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="network" class="w-4 h-4 text-emerald-400"></i>
+              <span>3. Ping ESP32</span>
+            </button>
+
+            <button onclick="simToggleLed()" class="p-3 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 flex flex-col items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="lightbulb" class="w-4 h-4 text-yellow-400"></i>
+              <span>4. Toggle GPIO5</span>
+            </button>
+          </div>
+
+          <!-- Fault Injection Options -->
+          <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Simulate Real-World Field Faults:</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition-colors">
+                <input type="checkbox" id="fault-wrong-pass" class="accent-rose-500 rounded">
+                <span class="text-slate-300">Incorrect Password</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition-colors">
+                <input type="checkbox" id="fault-5ghz" class="accent-amber-500 rounded">
+                <span class="text-slate-300">5GHz SSID Only</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition-colors">
+                <input type="checkbox" id="fault-isolation" class="accent-indigo-500 rounded">
+                <span class="text-slate-300">Router AP Isolation On</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:bg-slate-900 transition-colors">
+                <input type="checkbox" id="fault-brownout" class="accent-red-500 rounded">
+                <span class="text-slate-300">USB Brownout Reset</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Hardware Serial Monitor -->
+        <div class="lg:col-span-6 flex flex-col h-full">
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 flex flex-col h-[480px] overflow-hidden shadow-inner">
+            
+            <!-- Terminal Header -->
+            <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                <span class="text-xs font-mono font-medium text-slate-400 ml-2">Serial Monitor @ 115200 baud</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="clearSerial()" class="text-[11px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition-colors">
+                  Clear
+                </button>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
+                  ESP32-WROOM-32
+                </span>
+              </div>
+            </div>
+
+            <!-- Terminal Stream Body -->
+            <div id="serial-terminal" class="p-4 font-mono text-xs text-slate-300 overflow-y-auto flex-1 space-y-1.5 bg-[#0a0f1d] select-text">
+              <div class="text-slate-500">[00:00:00.000] rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)</div>
+              <div class="text-slate-500">[00:00:00.012] configsip: 0, SPIWP:0xee</div>
+              <div class="text-slate-500">[00:00:00.024] clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00</div>
+              <div class="text-slate-500">[00:00:00.035] mode:DIO, clock div:1</div>
+              <div class="text-cyan-400 font-bold">[00:00:00.050] ================================</div>
+              <div class="text-cyan-400 font-bold">[00:00:00.051]        IoT Student Lab</div>
+              <div class="text-cyan-400 font-bold">[00:00:00.052]  ESP32 Wi-Fi Ready for Command</div>
+              <div class="text-cyan-400 font-bold">[00:00:00.053] ================================</div>
+              <div class="text-emerald-400">[00:00:00.060] System initialized. Click '1. Scan Air' or '2. Connect Wi-Fi' to begin.</div>
+            </div>
+
+            <!-- Terminal Input Prompt Simulation -->
+            <div class="p-2.5 bg-slate-950 border-t border-slate-800 flex items-center gap-2 text-xs">
+              <span class="text-cyan-400 font-mono font-bold">&gt;</span>
+              <input id="terminal-custom-cmd" type="text" placeholder="Type 'help', 'status', 'scan', or 'ip'..." class="bg-transparent text-slate-200 font-mono w-full focus:outline-none text-xs" onkeydown="handleTerminalInput(event)">
+              <button onclick="executeTerminalInput()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono">Send</button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 4: CODE SKETCHES WITH ANNOTATIONS
+         ========================================== -->
+    <section id="section-code" class="scroll-mt-24">
+      <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center text-sm">
+            4
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold text-white">Production Arduino Sketches</h3>
+            <p class="text-xs text-slate-400">Battle-tested templates ready to flash onto your physical ESP32</p>
+          </div>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div class="flex items-center gap-2 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700 text-xs font-semibold">
+          <button id="tab-btn-scan" onclick="switchCodeTab('scan')" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 text-white transition-all shadow">
+            1. Wi-Fi Scanner
+          </button>
+          <button id="tab-btn-sta" onclick="switchCodeTab('sta')" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">
+            2. Station (STA) Connect
+          </button>
+          <button id="tab-btn-ap" onclick="switchCodeTab('ap')" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">
+            3. Access Point (AP) Hotspot
+          </button>
+        </div>
+      </div>
+
+      <!-- Code Block Container -->
+      <div class="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        
+        <!-- Header Strip -->
+        <div class="px-6 py-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span id="code-file-name" class="font-mono text-xs font-bold text-cyan-400">ESP32_WiFi_Scanner.ino</span>
+            <span id="code-desc" class="text-xs text-slate-400 hidden sm:inline">&mdash; Discovers nearby 2.4 GHz BSSIDs without passwords</span>
+          </div>
+          <button onclick="copyActiveCode()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white text-xs font-medium flex items-center gap-1.5 border border-slate-700 transition-all">
+            <i data-lucide="copy" class="w-3.5 h-3.5 text-cyan-400"></i> Copy Sketch
+          </button>
+        </div>
+
+        <!-- Code Viewer with line numbers -->
+        <div class="p-6 font-mono text-xs leading-relaxed overflow-x-auto text-slate-300 max-h-[500px]">
+          <pre id="code-content"><code class="language-cpp">/* Code will load here dynamically */</code></pre>
+        </div>
+
+        <!-- Line-by-Line Key Highlights Card -->
+        <div class="px-6 py-4 bg-slate-900/50 border-t border-slate-800 text-xs text-slate-400 flex items-start gap-3">
+          <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5"></i>
+          <div id="code-annotation" class="leading-relaxed">
+            <strong class="text-white">Why this matters:</strong> Running a scan before connecting lets you verify your ESP32's 2.4 GHz RF circuitry is fully functional without worrying about credential typos or router encryption mismatches.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 5: DIAGNOSTICS & TROUBLESHOOTING
+         ========================================== -->
+    <section id="section-troubleshooting" class="scroll-mt-24">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center text-sm">
+          5
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold text-white">Interactive Diagnostic Matrix</h3>
+          <p class="text-xs text-slate-400">Identify and resolve the top 4 real-world lab connection pitfalls</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Pitfall 1 -->
+        <div class="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 hover:border-slate-700 transition-all">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center font-bold text-sm">
+              !
+            </div>
+            <h4 class="text-base font-bold text-white">ESP32 Prints Dots "....." Forever</h4>
+          </div>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            The board is repeatedly calling <code class="text-slate-300">WiFi.begin()</code> but never receives an association acknowledge packet from the router.
+          </p>
+          <div class="space-y-2 text-xs bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+            <div class="text-cyan-400 font-semibold mb-1">Checklist to fix:</div>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Ensure your router has a dedicated <strong>2.4 GHz band</strong> enabled (ESP32 lacks 5 GHz hardware).</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Verify your SSID and password for exact casing (Wi-Fi credentials are case-sensitive).</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Confirm Wi-Fi channel is between 1 and 11. Some ESP32 chips fail on channels 12–14.</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Pitfall 2 -->
+        <div class="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 hover:border-slate-700 transition-all">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-sm">
+              !
+            </div>
+            <h4 class="text-base font-bold text-white">ESP32 Has IP, but Ping/Browser Fails</h4>
+          </div>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            The ESP32 successfully connected to the router, yet your laptop cannot ping <code class="text-slate-300">192.168.1.XX</code> or open the web server.
+          </p>
+          <div class="space-y-2 text-xs bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+            <div class="text-cyan-400 font-semibold mb-1">Checklist to fix:</div>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span><strong>AP Isolation / Client Isolation:</strong> School and office networks deliberately block wireless devices from talking to each other.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Ensure phone/laptop is not on a "Guest" SSID or cellular data while testing.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Disable host VPN on your computer; VPNs redirect local subnet routing.</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Pitfall 3 -->
+        <div class="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 hover:border-slate-700 transition-all">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center font-bold text-sm">
+              !
+            </div>
+            <h4 class="text-base font-bold text-white">"Brownout Detector Was Triggered" Reboots</h4>
+          </div>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            The ESP32 suddenly resets the moment <code class="text-slate-300">WiFi.begin()</code> is executed, spitting brownout crash logs in Serial Monitor.
+          </p>
+          <div class="space-y-2 text-xs bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+            <div class="text-cyan-400 font-semibold mb-1">Checklist to fix:</div>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>RF calibration causes sudden <strong>500 mA current spikes</strong>. Replace cheap, thin USB cables.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Do not power the ESP32 through unpowered passive USB hubs. Plug directly into the PC.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Solder a 100 µF to 470 µF electrolytic capacitor across the 3.3V and GND pins.</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Pitfall 4 -->
+        <div class="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 hover:border-slate-700 transition-all">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-sm">
+              !
+            </div>
+            <h4 class="text-base font-bold text-white">Board Disconnects Randomly After Minutes</h4>
+          </div>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            Connection works at first, then silently drops out when the router shifts channels or DHCP lease expires.
+          </p>
+          <div class="space-y-2 text-xs bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+            <div class="text-cyan-400 font-semibold mb-1">Checklist to fix:</div>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Implement non-blocking reconnection loops: <code class="text-cyan-300">if (WiFi.status() != WL_CONNECTED) WiFi.reconnect();</code></span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Disable Wi-Fi modem sleep: <code class="text-cyan-300">WiFi.setSleep(false);</code> for continuous responsive servers.</span>
+            </label>
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" class="accent-cyan-400 rounded mt-0.5">
+              <span>Check distance and RSSI; values worse than -82 dBm cause router disconnect timers to fire.</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-20 border-t border-slate-800 bg-slate-950 py-10 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-cyan-600/20 text-cyan-400 flex items-center justify-center">
+          <i data-lucide="cpu" class="w-4 h-4"></i>
+        </div>
+        <span class="text-slate-400 font-semibold">IoT Student Lab &bull; Practical Embedded Curriculum</span>
+      </div>
+      <p>Built for hands-on learning with Espressif ESP32 hardware.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Application State
+    const state = {
+      simMode: 'STA',           // 'STA' or 'AP'
+      isConnected: false,
+      ledState: false,
+      rssi: -58,
+      activeCodeTab: 'scan',
+      timestampBase: Date.now()
+    };
+
+    // Code Snippet Database
+    const codeSnippets = {
+      scan: {
+        filename: "01_WiFi_Scanner.ino",
+        desc: "Discovers all nearby 2.4 GHz broadcasts and reports signal strength (RSSI)",
+        annotation: "<strong>Why this matters:</strong> Running a scan before connecting lets you verify your ESP32's 2.4 GHz RF circuitry is fully functional without worrying about credential typos or router encryption mismatches.",
+        code: `/*
+  IoT Student Lab - Module 1
+  ESP32 Wi-Fi Network Scanner
+*/
+#include <WiFi.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  // Set Wi-Fi to station mode and disconnect from any AP
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);
+
+  Serial.println("\\n==================================");
+  Serial.println(" ESP32 2.4 GHz Spectrum Scanner");
+  Serial.println("==================================");
+}
+
+void loop() {
+  Serial.println("\\n[SCAN] Scanning Wi-Fi networks...");
+
+  // WiFi.scanNetworks returns the number of networks found
+  int networkCount = WiFi.scanNetworks();
+
+  if (networkCount == 0) {
+    Serial.println("[SCAN] No networks found in range.");
+  } else {
+    Serial.printf("[SCAN] %d networks discovered:\\n", networkCount);
+    Serial.println("---------------------------------------------------------------");
+    Serial.printf("%-4s | %-24s | %-8s | %-4s | %s\\n", "#", "SSID", "RSSI", "CH", "ENCRYPTION");
+    Serial.println("---------------------------------------------------------------");
+
+    for (int i = 0; i < networkCount; ++i) {
+      Serial.printf("%-4d | %-24s | %4d dBm | %-4d | %s\\n",
+                    i + 1,
+                    WiFi.SSID(i).c_str(),
+                    WiFi.RSSI(i),
+                    WiFi.channel(i),
+                    (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "Open [None]" : "Secured [WPA2]");
+      delay(10);
+    }
+  }
+
+  // Free memory allocated for scan results
+  WiFi.scanDelete();
+
+  // Wait 10 seconds before next scan
+  delay(10000);
+}`
+      },
+
+      sta: {
+        filename: "02_Station_Connect.ino",
+        desc: "Connects the ESP32 to your home router and handles auto-reconnect",
+        annotation: "<strong>Why this matters:</strong> Notice the check for <code>WiFi.status() == WL_CONNECTED</code> in both <code>setup()</code> and <code>loop()</code>. Real-world IoT devices must recover gracefully if a router reboots.",
+        code: `/*
+  IoT Student Lab - Module 2
+  ESP32 Station (STA) Connect with Reconnection
+*/
+#include <WiFi.h>
+
+// Enter your 2.4 GHz credentials
+const char* WIFI_SSID = "HomeRouter_2.4G";
+const char* WIFI_PASS = "LabPassword123";
+
+void connectToWiFi() {
+  Serial.println();
+  Serial.printf("[WIFI] Connecting to SSID: %s\\n", WIFI_SSID);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  int attempt = 0;
+  while (WiFi.status() != WL_CONNECTED && attempt < 25) {
+    delay(500);
+    Serial.print(".");
+    attempt++;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\\n[WIFI] Connected Successfully!");
+    Serial.printf("[WIFI] IP Address:  %s\\n", WiFi.localIP().toString().c_str());
+    Serial.printf("[WIFI] MAC Address: %s\\n", WiFi.macAddress().c_str());
+    Serial.printf("[WIFI] Signal RSSI: %d dBm\\n", WiFi.RSSI());
+    Serial.printf("[WIFI] Gateway IP:  %s\\n", WiFi.gatewayIP().toString().c_str());
+  } else {
+    Serial.println("\\n[WARN] Connection timed out! Check SSID/Password/Band.");
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  connectToWiFi();
+}
+
+void loop() {
+  // If connection drops, re-attempt
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("[ALERT] Wi-Fi lost! Attempting reconnect...");
+    WiFi.reconnect();
+    delay(5000);
+  }
+
+  // Your IoT sensor reading or server tasks go here
+  delay(1000);
+}`
+      },
+
+      ap: {
+        filename: "03_AccessPoint_Hotspot.ino",
+        desc: "Configures the ESP32 as an independent Access Point with its own DHCP IP",
+        annotation: "<strong>Why this matters:</strong> In AP mode, the default IP is almost always <code>192.168.4.1</code>. Students can connect their phones directly without needing the school router's permission.",
+        code: `/*
+  IoT Student Lab - Module 3
+  ESP32 Standalone Access Point (AP)
+*/
+#include <WiFi.h>
+
+const char* AP_SSID = "ESP32-Student-Lab";
+const char* AP_PASS = "12345678"; // Minimum 8 characters for WPA2
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  Serial.println("\\n==================================");
+  Serial.println("  ESP32 Soft-AP Configuration");
+  Serial.println("==================================");
+
+  // Set mode to Access Point
+  WiFi.mode(WIFI_AP);
+
+  // Start Access Point on channel 1, broadcast SSID, max 4 clients
+  bool success = WiFi.softAP(AP_SSID, AP_PASS, 1, 0, 4);
+
+  if (success) {
+    Serial.println("[AP] Access Point started successfully!");
+    Serial.printf("[AP] SSID:        %s\\n", AP_SSID);
+    Serial.printf("[AP] Password:    %s\\n", AP_PASS);
+    Serial.printf("[AP] AP IP:       %s\\n", WiFi.softAPIP().toString().c_str());
+    Serial.printf("[AP] SoftAP MAC:  %s\\n", WiFi.softAPmacAddress().c_str());
+    Serial.println("[AP] Ready for phone/laptop connections.");
+  } else {
+    Serial.println("[ERR] Failed to start Soft-AP.");
+  }
+}
+
+void loop() {
+  // Report connected stations count
+  static int lastCount = 0;
+  int currentCount = WiFi.softAPgetStationNum();
+
+  if (currentCount != lastCount) {
+    lastCount = currentCount;
+    Serial.printf("[AP] Connected Clients: %d\\n", currentCount);
+  }
+
+  delay(2000);
+}`
+      }
+    };
+
+    // Initialize Active Tab Code
+    function switchCodeTab(tab) {
+      state.activeCodeTab = tab;
+
+      // Update button styles
+      ['scan', 'sta', 'ap'].forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tab) {
+          btn.className = "px-3.5 py-1.5 rounded-lg bg-cyan-600 text-white transition-all shadow";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+        }
+      });
+
+      const data = codeSnippets[tab];
+      document.getElementById('code-file-name').innerText = data.filename;
+      document.getElementById('code-desc').innerText = `— ${data.desc}`;
+      document.getElementById('code-annotation').innerHTML = data.annotation;
+
+      // Syntax-highlight escape
+      const preCode = document.getElementById('code-content');
+      preCode.innerHTML = `<code class="language-cpp">${escapeHtml(data.code)}</code>`;
+    }
+
+    // Helper: HTML Escaper
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    // Smooth Scroll Helper
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Toast Notice
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.innerText = msg;
+      toast.classList.remove('opacity-0', 'translate-y-20', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-20', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // Copy to Clipboard (execCommand fallback)
+    function copyToClipboard(elementId, label) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.select();
+      try {
+        document.execCommand('copy');
+        showToast(`${label || 'Text'} copied to clipboard!`);
+      } catch (err) {
+        showToast('Press Ctrl+C / Cmd+C to copy');
+      }
+    }
+
+    function copyActiveCode() {
+      const currentCode = codeSnippets[state.activeCodeTab].code;
+      const tempInput = document.createElement('textarea');
+      tempInput.value = currentCode;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast(`${codeSnippets[state.activeCodeTab].filename} copied!`);
+    }
+
+    // Serial Monitor Terminal Logger
+    function logSerial(text, colorClass = "text-slate-300") {
+      const term = document.getElementById('serial-terminal');
+      const timeOffset = ((Date.now() - state.timestampBase) / 1000).toFixed(3);
+      const row = document.createElement('div');
+      row.className = `${colorClass} leading-tight`;
+      row.innerHTML = `<span class="text-slate-500">[+${timeOffset}s]</span> ${text}`;
+      term.appendChild(row);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearSerial() {
+      const term = document.getElementById('serial-terminal');
+      term.innerHTML = '<div class="text-slate-500 font-mono text-xs">Terminal cleared.</div>';
+    }
+
+    // Set Simulator Mode: STA vs AP
+    function setSimMode(mode) {
+      state.simMode = mode;
+      state.isConnected = false;
+      state.ledState = false;
+
+      const btnSta = document.getElementById('sim-mode-sta');
+      const btnAp = document.getElementById('sim-mode-ap');
+      const topTitle = document.getElementById('topology-title');
+      const routerLabel = document.getElementById('router-label');
+      const routerBox = document.getElementById('router-box');
+      const linkStatusBadge = document.getElementById('link-status-badge');
+      const espIp = document.getElementById('esp-ip-display');
+      const led = document.getElementById('virtual-led');
+
+      led.className = "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-slate-700 border-2 border-slate-900 transition-colors";
+
+      if (mode === 'STA') {
+        btnSta.className = "px-3 py-1 rounded-lg text-xs font-semibold bg-cyan-600 text-white transition-all";
+        btnAp.className = "px-3 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:text-white transition-all";
+        topTitle.innerText = "Local Area Network (STA Mode)";
+        routerLabel.innerText = "HomeRouter_2.4G";
+        routerBox.innerHTML = '<i data-lucide="router" class="w-7 h-7"></i>';
+        espIp.innerText = "0.0.0.0";
+        document.getElementById('btn-connect-label').innerText = "2. Connect Wi-Fi";
+      } else {
+        btnAp.className = "px-3 py-1 rounded-lg text-xs font-semibold bg-purple-600 text-white transition-all";
+        btnSta.className = "px-3 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:text-white transition-all";
+        topTitle.innerText = "Direct Soft-AP Network (AP Mode)";
+        routerLabel.innerText = "No Router Needed";
+        routerBox.innerHTML = '<i data-lucide="ban" class="w-7 h-7 text-slate-500"></i>';
+        espIp.innerText = "192.168.4.1";
+        document.getElementById('btn-connect-label').innerText = "2. Broadcast AP";
+      }
+
+      linkStatusBadge.innerText = "IDLE";
+      linkStatusBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700";
+
+      lucide.createIcons();
+      logSerial(`Wi-Fi mode changed to <strong>WIFI_${mode}</strong>`, "text-cyan-400");
+    }
+
+    // Distance/RSSI slider update
+    function updateRssi(val) {
+      state.rssi = parseInt(val, 10);
+      document.getElementById('rssi-val').innerText = `${state.rssi} dBm`;
+    }
+
+    // Trigger Visual Packet Dot
+    function animatePacket(packetId, duration = 800) {
+      const p = document.getElementById(packetId);
+      if (!p) return;
+      p.classList.remove('hidden');
+      p.classList.add('packet-dot');
+      setTimeout(() => {
+        p.classList.remove('packet-dot');
+        p.classList.add('hidden');
+      }, duration);
+    }
+
+    // 1. Scan Simulation
+    function simScanNetworks() {
+      logSerial("[SCAN] Invoking WiFi.scanNetworks() on 2.4 GHz...", "text-yellow-300");
+
+      if (document.getElementById('fault-brownout').checked) {
+        logSerial("Guru Meditation Error: Core 1 panic'ed (Brownout reset was triggered)", "text-rose-500 font-bold");
+        logSerial("Rebooting ESP32... Power draw exceeded 500mA USB rail!", "text-rose-400");
+        return;
+      }
+
+      setTimeout(() => {
+        logSerial("[SCAN] Found 4 networks nearby:", "text-slate-300");
+        logSerial("  1: HomeRouter_2.4G   | RSSI: " + state.rssi + " dBm | Ch: 6  | WPA2", "text-cyan-300 font-mono");
+        logSerial("  2: School_Guest_Net  | RSSI: -71 dBm | Ch: 1  | Open", "text-slate-400 font-mono");
+        logSerial("  3: IoT_Sensor_Mesh   | RSSI: -82 dBm | Ch: 11 | WPA2", "text-slate-400 font-mono");
+        logSerial("  4: ESP32-TestNode    | RSSI: -45 dBm | Ch: 6  | WPA2", "text-slate-400 font-mono");
+      }, 500);
+    }
+
+    // 2. Connect / Disconnect Simulation
+    function simToggleConnect() {
+      const badge = document.getElementById('link-status-badge');
+      const espIp = document.getElementById('esp-ip-display');
+      const btn = document.getElementById('btn-connect');
+
+      // Check Faults
+      const wrongPass = document.getElementById('fault-wrong-pass').checked;
+      const fault5g = document.getElementById('fault-5ghz').checked;
+      const brownout = document.getElementById('fault-brownout').checked;
+
+      if (brownout) {
+        logSerial("[HARDWARE] Brownout detector triggered during radio calibrate!", "text-rose-500 font-bold");
+        logSerial("[PANIC] USB 5V dropped below 4.4V. Replace USB cable!", "text-rose-400");
+        return;
+      }
+
+      if (state.isConnected) {
+        // Disconnect
+        state.isConnected = false;
+        badge.innerText = "DISCONNECTED";
+        badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700";
+        btn.className = "p-3 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all shadow-lg shadow-cyan-600/20";
+        espIp.innerText = "0.0.0.0";
+        logSerial("[WIFI] Disconnected. WiFi.disconnect() called.", "text-slate-400");
+        return;
+      }
+
+      // Connecting flow
+      logSerial(`[WIFI] Initializing ${state.simMode} handshake...`, "text-cyan-300");
+
+      if (fault5g) {
+        logSerial("[WIFI] Searching for SSID 'HomeRouter_5GHz'...", "text-slate-400");
+        logSerial("[ERR] BSSID not found! ESP32 physical radio only supports 2.4GHz IEEE 802.11b/g/n.", "text-rose-400 font-bold");
+        return;
+      }
+
+      let dots = 0;
+      const interval = setInterval(() => {
+        dots++;
+        logSerial(". . .", "text-slate-500");
+
+        if (dots >= 3) {
+          clearInterval(interval);
+
+          if (wrongPass) {
+            logSerial("[AUTH_FAIL] Disconnected! Reason: 202 (AUTH_FAIL). Check password.", "text-rose-400 font-bold");
+            badge.innerText = "AUTH ERROR";
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800";
+            return;
+          }
+
+          // Successful Connection
+          state.isConnected = true;
+          animatePacket('packet-1');
+
+          if (state.simMode === 'STA') {
+            espIp.innerText = "192.168.1.42";
+            badge.innerText = "STA CONNECTED";
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800";
+            logSerial("[WIFI] Station Connected to 'HomeRouter_2.4G'!", "text-emerald-400 font-bold");
+            logSerial("[DHCP] Assigned IP: 192.168.1.42 (Subnet: 255.255.255.0)", "text-cyan-300");
+            logSerial("[DHCP] Gateway IP:  192.168.1.1", "text-slate-300");
+            logSerial(`[RSSI] Signal:      ${state.rssi} dBm`, "text-slate-300");
+          } else {
+            espIp.innerText = "192.168.4.1";
+            badge.innerText = "AP ACTIVE";
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800";
+            logSerial("[AP] Soft-AP started: 'ESP32-Student-Lab'", "text-purple-300 font-bold");
+            logSerial("[AP] Access Point IP: 192.168.4.1", "text-cyan-300");
+          }
+        }
+      }, 300);
+    }
+
+    // 3. Ping Simulation
+    function simPingEsp() {
+      if (!state.isConnected) {
+        logSerial("[PING] FAILED: ESP32 has no active Wi-Fi link. Connect first.", "text-rose-400");
+        return;
+      }
+
+      if (document.getElementById('fault-isolation').checked) {
+        logSerial("[PING] Ping 192.168.1.42: Request timed out. (AP/Client Isolation active on router)", "text-amber-400 font-bold");
+        logSerial("[DIAG] Router refuses to route unicast packets between Wi-Fi peers.", "text-slate-400");
+        return;
+      }
+
+      animatePacket('packet-2');
+      logSerial("student@laptop:~$ ping -c 3 192.168.1.42", "text-slate-400");
+      setTimeout(() => {
+        logSerial("64 bytes from 192.168.1.42: icmp_seq=1 ttl=128 time=8.2 ms", "text-emerald-300 font-mono");
+        logSerial("64 bytes from 192.168.1.42: icmp_seq=2 ttl=128 time=6.4 ms", "text-emerald-300 font-mono");
+        logSerial("64 bytes from 192.168.1.42: icmp_seq=3 ttl=128 time=7.1 ms", "text-emerald-300 font-mono");
+        logSerial("--- 192.168.1.42 ping statistics --- 3 packets transmitted, 3 received, 0% packet loss", "text-slate-400 font-mono");
+      }, 400);
+    }
+
+    // 4. Remote GPIO5 Control Simulation
+    function simToggleLed() {
+      if (!state.isConnected) {
+        logSerial("[HTTP] Connection refused! Web server is unreachable.", "text-rose-400");
+        return;
+      }
+
+      state.ledState = !state.ledState;
+      const led = document.getElementById('virtual-led');
+
+      animatePacket('packet-2');
+
+      if (state.ledState) {
+        led.className = "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-emerald-400 border-2 border-slate-900 shadow-[0_0_12px_#34d399] transition-all";
+        logSerial("[HTTP GET /on] Client request processed &rarr; digitalWrite(5, HIGH);", "text-emerald-400 font-bold");
+        logSerial("Serial &rarr; 'LED &rarr; ON'", "text-slate-300");
+      } else {
+        led.className = "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-slate-700 border-2 border-slate-900 transition-all";
+        logSerial("[HTTP GET /off] Client request processed &rarr; digitalWrite(5, LOW);", "text-amber-400 font-bold");
+        logSerial("Serial &rarr; 'LED &rarr; OFF'", "text-slate-300");
+      }
+    }
+
+    // Terminal Command Line Handler
+    function handleTerminalInput(e) {
+      if (e.key === 'Enter') {
+        executeTerminalInput();
+      }
+    }
+
+    function executeTerminalInput() {
+      const input = document.getElementById('terminal-custom-cmd');
+      const cmd = input.value.trim().toLowerCase();
+      if (!cmd) return;
+
+      logSerial(`&gt; ${cmd}`, "text-white font-bold");
+      input.value = '';
+
+      switch (cmd) {
+        case 'help':
+          logSerial("Available commands: scan, connect, disconnect, ping, led, status, clear, help", "text-cyan-300");
+          break;
+        case 'scan':
+          simScanNetworks();
+          break;
+        case 'connect':
+          if (!state.isConnected) simToggleConnect();
+          else logSerial("Already connected.", "text-slate-400");
+          break;
+        case 'disconnect':
+          if (state.isConnected) simToggleConnect();
+          else logSerial("Already disconnected.", "text-slate-400");
+          break;
+        case 'ping':
+          simPingEsp();
+          break;
+        case 'led':
+          simToggleLed();
+          break;
+        case 'status':
+          logSerial(`Mode: WIFI_${state.simMode} | Connected: ${state.isConnected} | RSSI: ${state.rssi} dBm | LED: ${state.ledState ? 'ON' : 'OFF'}`, "text-cyan-300");
+          break;
+        case 'clear':
+          clearSerial();
+          break;
+        default:
+          logSerial(`Unknown command '${cmd}'. Type 'help' for supported commands.`, "text-slate-400");
+      }
+    }
+
+    // Initial Sketch Loading on Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      switchCodeTab('scan');
+    });
+  </script>
+</body>
+</html>
