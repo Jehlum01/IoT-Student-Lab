@@ -1,237 +1,155 @@
-# 28 — IoT Temperature Monitor
+# Project 28 — Wi-Fi Temperature Monitor
 
-> **IoT Student Lab · Learning Project**
+> **ESP32 + DHT22 + Wi-Fi + Local Web Dashboard**
 
-## 🎯 Project Overview
+## 🎯 Goal
+Build a local IoT monitoring system that reads temperature and humidity from a DHT22 and displays the measurements through a web dashboard hosted by the ESP32.
 
-Send temperature information over Wi-Fi for remote monitoring.
-
-This project is part of **Level 4 — IoT & Connectivity** and is designed around a hands-on engineering workflow:
-
-**Understand → Build → Program → Test → Troubleshoot → Improve**
-
-### Core focus
-
-**Sensor + cloud**
-
----
+```text
+DHT22 → ESP32 → Wi-Fi → HTTP → Browser
+```
 
 ## 🧠 Learning Objectives
+- Read temperature and humidity from a DHT22.
+- Understand digital sensor communication.
+- Connect an ESP32 to Wi-Fi.
+- Host a local HTTP dashboard.
+- Handle invalid sensor readings.
+- Use `millis()` for periodic sampling.
+- Create a `/data` endpoint.
+- Apply fault isolation during debugging.
 
-By completing this project, students should be able to:
+## 🧰 Components
 
-- Explain the purpose of the project and its components.
-- Identify the inputs, processing logic and outputs.
-- Build the circuit using the provided wiring information.
-- Understand the important parts of the program.
-- Test the system systematically.
-- Identify common hardware and software faults.
-- Suggest at least one improvement or extension.
-
----
-
-## 📊 Project Information
-
-| Item | Details |
+| Component | Purpose |
 |---|---|
-| Difficulty | Beginner / Intermediate |
-| Platform | ESP8266 NodeMCU / ESP32, as specified by the project |
-| Main concept | Sensor + cloud |
-| Estimated time | Instructor-defined |
-| Project type | Hands-on learning project |
+| ESP32 | Controller, Wi-Fi and web server |
+| DHT22 | Temperature/humidity sensor |
+| Breadboard | Prototyping |
+| Jumper wires | Connections |
+| USB cable | Power/programming |
 
----
+## 🔌 Wiring
 
-## 🔧 Components
+| DHT22 | ESP32 |
+|---|---|
+| VCC | 3.3V |
+| DATA | GPIO 4 |
+| GND | GND |
 
-The exact bill of materials, component variants and quantities should be recorded here before the classroom build.
+For a bare DHT22, use the appropriate DATA pull-up resistor according to the sensor documentation. Many modules already include it.
 
-Typical components may include:
+The source specifies GPIO 4 and DHT22. 
 
-- Microcontroller board
-- Breadboard
-- Jumper wires
-- Resistors
-- LEDs / indicators
-- Required sensor(s)
-- Required actuator(s)
-- Power supply appropriate for the circuit
+## 🌐 Web Dashboard
 
-> **Important:** Do not assume a pinout from a different board or module. Use the wiring table supplied for the exact hardware version used in class.
+The dashboard displays:
+- Temperature
+- Humidity
+- Sensor status
+- SSID
+- IP address
+- RSSI
+- DHT22 GPIO
 
----
+It refreshes approximately every 5 seconds.
 
-## 🔌 Wiring & Pin Configuration
+### Routes
 
-Create a project-specific wiring table here.
+| Route | Function |
+|---|---|
+| `/` | HTML dashboard |
+| `/data` | Plain-text sensor data |
+| Other | HTTP 404 |
 
-| Component | Pin / Signal | Controller Pin | Purpose |
-|---|---|---|---|
-| Input / Sensor | Signal | TBD | Read system information |
-| Output / Actuator | Control | TBD | Control physical output |
-| Indicator | Signal | TBD | Show system state |
-| Power | VCC / GND | Appropriate supply | Power the module |
-
-**Before powering the circuit:** verify VCC, GND, signal wiring and voltage compatibility.
-
----
-
-## ⚙️ How It Works
-
-The system should be understood as a chain:
+Example `/data` response:
 
 ```text
-INPUT / SENSOR
-      ↓
-MICROCONTROLLER
-      ↓
-DECISION / PROGRAM LOGIC
-      ↓
-OUTPUT / ACTUATOR
-      ↓
-USER / ENVIRONMENT
+Temperature: 24.5 C
+Humidity: 57.0 %
 ```
 
-Students should be able to explain what happens at every stage rather than treating the code as a black box.
+## ⏱️ Sampling
+The DHT22 is read approximately every **2 seconds** using `millis()`. This allows the ESP32 to continue processing web clients rather than blocking the main loop with a long delay.
 
----
+## 🛡️ Sensor Validation
 
-## 💻 Code
+```text
+Read DHT22
+    ↓
+Valid?
+ ┌──┴──┐
+Yes    No
+ ↓      ↓
+Store  Error
+data   state
+```
 
-The source code for this project belongs in the project `code/` directory.
+Invalid readings are not presented as normal sensor data.
 
-Before uploading:
+## 🖥️ Testing
 
-1. Select the correct board.
-2. Select the correct port.
-3. Install the required libraries.
-4. Verify the pin configuration.
-5. Read the code before uploading it.
-6. Upload and observe the result.
+- [ ] DHT22 VCC → 3.3V
+- [ ] DATA → GPIO 4
+- [ ] GND → GND
+- [ ] Pull-up verified where required
+- [ ] DHT library installed
+- [ ] Wi-Fi connected
+- [ ] IP address visible at 115200 baud
+- [ ] Sensor values visible
+- [ ] Dashboard loads
+- [ ] `/data` works
+- [ ] Error handling works
 
----
+## 🛠️ Troubleshooting
 
-## 🧪 Testing Procedure
+```text
+DHT22 → GPIO → Processing → Wi-Fi → HTTP → Browser
+```
 
-Use a controlled test sequence:
+If the sensor fails, check wiring, sensor type, pull-up and library. If the sensor works but the webpage fails, investigate the network/server layer.
 
-1. Inspect the circuit with power disconnected.
-2. Check all connections.
-3. Power the board.
-4. Open Serial Monitor if the project uses serial output.
-5. Test each input independently.
-6. Test each output independently.
-7. Test the complete system.
-8. Record unexpected behaviour.
-9. Troubleshoot one variable at a time.
+## 🔬 Experiments
 
----
+### 1. Temperature Warning
+Add a threshold such as `> 30 °C`.
 
-## ✅ Expected Result
+### 2. Minimum / Maximum
+Track minimum and maximum temperature from valid readings.
 
-The completed system should respond to its defined inputs and produce the expected outputs.
+### 3. Uptime
+Display ESP32 uptime using `millis()`.
 
-Record actual observations during the classroom test rather than assuming that a successful upload means the project is correct.
+### 4. JSON API
+Change `/data` to:
 
----
+```json
+{"temperature":24.5,"humidity":57.0}
+```
 
-## ❌ Troubleshooting
+### 5. Multiple Sensors
+Extend the dashboard with additional environmental measurements.
 
-| Symptom | Possible Cause | What to Check |
-|---|---|---|
-| Nothing works | Power / GND problem | Supply, GND and wiring |
-| Output does not respond | Incorrect pin | Pin definitions and physical wiring |
-| Sensor value looks wrong | Wiring / calibration | Sensor supply, signal and expected range |
-| Program does not compile | Library / syntax issue | Board package and required libraries |
-| Behaviour is reversed | Active-high / active-low logic | Output logic and module type |
-| Works intermittently | Loose connection / power issue | Breadboard and power supply |
-
----
-
-## 🧩 Student Exercises
-
-### Exercise 1 — Explain
-
-Explain the purpose of every component used in the circuit.
-
-### Exercise 2 — Predict
-
-Before running the program, predict what should happen for different input conditions.
-
-### Exercise 3 — Debug
-
-Introduce one controlled wiring or software mistake and diagnose it.
-
-### Exercise 4 — Modify
-
-Change one parameter, threshold, timing value or output behaviour and observe the result.
-
----
-
-## 🚀 Challenge
-
-Extend the project without changing its fundamental purpose.
-
-Possible directions:
-
-- Add another indicator.
-- Add a display.
-- Add a manual override.
-- Improve the user interface.
-- Add data logging.
-- Add another sensor.
-- Add an error state.
-- Convert the system into an IoT version where appropriate.
-
----
-
-## 📝 Reflection
-
-After completing the project, answer:
-
-1. What did I build?
-2. What was the most important concept?
-3. What component was hardest to understand?
-4. What problem did I encounter?
-5. How did I troubleshoot it?
-6. What would I improve?
-7. What real-world system is similar to this project?
-
----
-
-## 🏁 Learning Outcome
-
-A successful student should be able to **build, explain, test and modify** the system—not merely upload the program.
-
----
+## 🏆 Engineering Challenge
+Build a local environmental dashboard with DHT22 temperature/humidity, Wi-Fi information, error handling, automatic refresh and a `/data` endpoint.
 
 ## ⚠️ Safety
+This is a low-voltage sensor project. Do not connect mains voltage to the ESP32, DHT22, breadboard or exposed prototype.
 
-- Disconnect power before changing wiring.
-- Check polarity before powering components.
-- Avoid short circuits.
-- Use suitable power supplies.
-- Do not connect high-voltage mains directly to microcontroller circuits.
-- Use instructor supervision for motors, pumps and relay-based systems.
-- Follow the safety guidance for the exact hardware used.
-
----
-
-## 📁 Recommended Project Structure
+## 📈 Progression
 
 ```text
-28-project/
-├── README.md
-├── code/
-├── circuit/
-├── images/
-└── resources/
+25 Wi-Fi Connection
+       ↓
+26 Web Server
+       ↓
+27 Smart Light
+       ↓
+28 Temperature Monitor
+       ↓
+29 Motion Alarm
+       ↓
+30 Smart Home Automation
 ```
 
----
-
-## 🔗 Continue Learning
-
-After completing this project, continue to the next project in the course sequence.
-
-**Learn → Build → Experiment → Troubleshoot → Improve → Create**
+Project 28 introduces **remote monitoring**, complementing the actuator control introduced previously.

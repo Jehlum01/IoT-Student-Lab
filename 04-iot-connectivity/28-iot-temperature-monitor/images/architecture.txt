@@ -1,0 +1,56 @@
+                 WI-FI TEMPERATURE MONITOR
+                 =========================
+
+
+        ┌─────────────────┐
+        │     DHT22       │
+        │                 │
+        │ Temperature     │
+        │ Humidity        │
+        └────────┬────────┘
+                 │
+              GPIO 4
+                 │
+                 ▼
+        ┌─────────────────┐
+        │      ESP32      │
+        │                 │
+        │ Sensor Reading  │
+        │ Web Server      │
+        └────────┬────────┘
+                 │
+                Wi-Fi
+                 │
+                 ▼
+        ┌─────────────────┐
+        │   Wi-Fi Router  │
+        └────────┬────────┘
+                 │
+              Network
+                 │
+                 ▼
+        ┌─────────────────┐
+        │  Phone / Laptop │
+        │    Browser      │
+        └─────────────────┘
+
+
+DATA FLOW
+
+DHT22
+  │
+  ├── Temperature
+  │
+  └── Humidity
+        │
+        ▼
+      ESP32
+        │
+        ▼
+      Wi-Fi
+        │
+        ▼
+   HTTP Web Page
+        │
+        ▼
+      Browser
