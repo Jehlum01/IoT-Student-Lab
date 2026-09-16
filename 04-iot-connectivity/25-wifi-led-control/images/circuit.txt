@@ -1,0 +1,181 @@
+# ⚡ Project 25 — ESP32 Wi-Fi LED Control Circuit
+
+## Circuit Purpose
+
+The circuit is intentionally small: one ESP32 GPIO controls one external LED.
+
+The interesting part of the project is that the GPIO command originates from a browser rather than from a local button.
+
+## System Architecture
+
+```mermaid
+flowchart LR
+    USER[User] --> BROWSER[Browser]
+    BROWSER --> WIFI[Wi-Fi]
+    WIFI --> ESP[ESP32 Web Server]
+    ESP --> GPIO[GPIO 5]
+    GPIO --> R[220Ω]
+    R --> LED[LED]
+    LED --> GND[GND]
+```
+
+## Hardware Signal Path
+
+```text
+HTTP request
+     ↓
+ESP32 software
+     ↓
+GPIO 5
+     ↓
+220Ω resistor
+     ↓
+LED
+     ↓
+GND
+```
+
+## Electrical Circuit
+
+```text
+             ESP32
+        ┌─────────────┐
+        │             │
+        │ GPIO 5 ─────┼────► [220Ω] ───► LED ───► GND
+        │             │
+        │ GND ────────┼───────────────────────────┘
+        │             │
+        └─────────────┘
+```
+
+The resistor is in series with the LED and limits current.
+
+## Control Architecture
+
+```mermaid
+flowchart TD
+    BROWSER[Browser] --> REQUEST[HTTP Request]
+    REQUEST --> SERVER[ESP32 Web Server]
+    SERVER --> ROUTE{Requested Route}
+
+    ROUTE -->|/on| ON[Set LED state ON]
+    ROUTE -->|/off| OFF[Set LED state OFF]
+    ROUTE -->|/| PAGE[Return Web Page]
+
+    ON --> GPIOHIGH[GPIO 5 HIGH]
+    OFF --> GPIOLOW[GPIO 5 LOW]
+
+    GPIOHIGH --> LEDON[LED ON]
+    GPIOLOW --> LEDOFF[LED OFF]
+```
+
+## HTTP Routes
+
+| URL Path | Function | Hardware result |
+|---|---|---|
+| `/` | `sendHomePage()` | No direct change |
+| `/on` | `handleLedOn()` | GPIO 5 HIGH |
+| `/off` | `handleLedOff()` | GPIO 5 LOW |
+
+## Software State
+
+The program uses:
+
+```cpp
+bool ledState = false;
+```
+
+This provides a software representation of the output.
+
+```text
+              ┌──────────────┐
+              │  ledState    │
+              └──────┬───────┘
+                     │
+              ┌──────┴───────┐
+              ▼              ▼
+        Web page status   GPIO output
+```
+
+The physical LED and displayed status should remain synchronized.
+
+## Wi-Fi Architecture
+
+The ESP32 operates in station mode:
+
+```mermaid
+flowchart LR
+    ESP[ESP32] --> STA[Wi-Fi Station Mode]
+    STA --> AP[Wi-Fi Access Point / Router]
+    AP --> CLIENT[Browser Device]
+```
+
+The router/network provides the local IP address.
+
+The ESP32 then becomes reachable by other devices that can access that local network.
+
+## Complete Data Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant B as Browser
+    participant W as Wi-Fi Network
+    participant E as ESP32
+    participant L as LED
+
+    U->>B: Click Turn ON
+    B->>W: HTTP GET /on
+    W->>E: Deliver request
+    E->>E: Set ledState = true
+    E->>L: GPIO 5 HIGH
+    L-->>E: LED illuminates
+    E-->>B: Updated HTML page
+    B-->>U: LED Status: ON
+```
+
+## Main Runtime Loop
+
+The web server must continuously process incoming requests:
+
+```cpp
+void loop() {
+  server.handleClient();
+}
+```
+
+Conceptually:
+
+```text
+ESP32 running
+      ↓
+Check for browser request
+      ↓
+Request received?
+   /           NO            YES
+ │              │
+ ▼              ▼
+Continue      Process route
+                 │
+                 ▼
+             Control GPIO
+                 │
+                 ▼
+             Send response
+                 │
+                 └──────► loop
+```
+
+## Circuit Verification
+
+Before powering the prototype:
+
+- [ ] GPIO 5 is the intended output
+- [ ] 220Ω resistor is in series with LED
+- [ ] LED polarity is correct
+- [ ] LED cathode reaches GND
+- [ ] No 5V signal is connected to GPIO
+- [ ] USB is the intended power source
+- [ ] Breadboard connections are secure
+
+> **Safety:** This is a low-voltage demonstration. Do not connect mains voltage or high-current loads directly to GPIO 5.
