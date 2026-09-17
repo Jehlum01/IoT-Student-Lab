@@ -1,0 +1,36 @@
+# Project 32 — ESP32 MQTT Sensor Publisher
+
+```text
+Physical Environment
+        │
+        ▼
+    ┌─────────┐
+    │  DHT22  │
+    │ Temp/Hum│
+    └────┬────┘
+         │ GPIO 4
+         ▼
+    ┌─────────┐
+    │  ESP32  │
+    │ Read +  │
+    │Validate │
+    └────┬────┘
+         │ Wi-Fi
+         ▼
+    ┌─────────┐
+    │  MQTT   │
+    │ Broker  │
+    └────┬────┘
+         │
+         ▼
+    ┌─────────┐
+    │Subscriber│
+    └─────────┘
+
+Topics:
+iot-student-lab/project32/temperature
+iot-student-lab/project32/humidity
+iot-student-lab/project32/telemetry
+
+Learning:
+SENSE → VALIDATE → STRUCTURE → CONNECT → PUBLISH → BROKER → SUBSCRIBE → CONSUME
