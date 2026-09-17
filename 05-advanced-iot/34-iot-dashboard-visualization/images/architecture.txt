@@ -1,0 +1,106 @@
+============================================================
+             IoT Student Lab — Project 34
+             IoT Dashboard & Visualization
+============================================================
+
+PHYSICAL LAYER
+
+                     ┌─────────┐
+                     │  DHT22  │
+                     └────┬────┘
+                          │ Sensor Data
+                          ▼
+                     ┌─────────┐
+                     │  ESP32  │
+                     └────┬────┘
+
+COMMUNICATION LAYER
+
+                          │ Wi-Fi
+                          ▼
+                     ┌─────────┐
+                     │  MQTT   │
+                     │ BROKER  │
+                     └────┬────┘
+
+APPLICATION LAYER
+
+                          │ MQTT
+                          ▼
+                  ┌──────────────────┐
+                  │ Python MQTT      │
+                  │ Subscriber       │
+                  └────────┬─────────┘
+                           │ Application State
+                           ▼
+                  ┌──────────────────┐
+                  │ Flask Web Server │
+                  └────────┬─────────┘
+                           │ HTTP
+                           ▼
+                  ┌──────────────────┐
+                  │ Web Browser      │
+                  │ Dashboard        │
+                  └──────────────────┘
+
+============================================================
+
+DATA FLOW
+
+DHT22
+  ↓
+Temperature + Humidity
+  ↓
+ESP32
+  ↓
+MQTT PUBLISH
+  ↓
+Broker
+  ↓
+MQTT SUBSCRIBER
+  ↓
+Python Application
+  ↓
+HTTP /api/data
+  ↓
+Browser
+  ↓
+Dashboard
+
+============================================================
+
+MQTT TOPIC
+
+iot-student-lab/project32/telemetry
+
+============================================================
+
+EXAMPLE MQTT PAYLOAD
+
+{
+  "reading": 12,
+  "temperature": 25.60,
+  "humidity": 61.20
+}
+
+============================================================
+
+PROJECT PROGRESSION
+
+31 → MQTT Fundamentals
+32 → Sensor Publisher
+33 → Remote Device Control
+34 → Dashboard & Visualization
+35 → Persistent IoT Data
+
+============================================================
+
+NEW CONCEPT
+
+DEVICE DATA
+     ↓
+MESSAGE
+     ↓
+APPLICATION
+     ↓
+VISUALIZATION
