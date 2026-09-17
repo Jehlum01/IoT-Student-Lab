@@ -1,0 +1,137 @@
+============================================================
+             IoT Student Lab — Project 33
+             MQTT Remote Device Control
+============================================================
+
+                  TWO-WAY MQTT COMMUNICATION
+
+                   ┌─────────────────────┐
+                   │    MQTT BROKER      │
+                   │                     │
+                   │   Message Router    │
+                   └──────────┬──────────┘
+                              │
+                 ┌────────────┴────────────┐
+                 │                         │
+            COMMAND FLOW              STATE FLOW
+                 │                         ▲
+                 ▼                         │
+          ┌──────────────┐          ┌──────┴──────┐
+          │ PC / MQTT    │          │    ESP32    │
+          │ Controller   │          │             │
+          └──────────────┘          │ Subscriber  │
+                                    └──────┬──────┘
+                                           │
+                                         GPIO 5
+                                           │
+                                           ▼
+                                          LED
+
+============================================================
+
+COMMAND TOPIC
+
+iot-student-lab/project33/device/command
+
+PAYLOAD
+
+ON
+OFF
+
+============================================================
+
+STATE TOPIC
+
+iot-student-lab/project33/device/state
+
+PAYLOAD
+
+ON
+OFF
+
+============================================================
+
+FULL MESSAGE FLOW
+
+User
+ │
+ │ ON
+ ▼
+MQTT Client
+ │
+ │ PUBLISH
+ ▼
+MQTT Broker
+ │
+ │ DELIVER
+ ▼
+ESP32
+ │
+ │ GPIO 5
+ ▼
+LED ON
+ │
+ │ PUBLISH STATE
+ ▼
+MQTT Broker
+ │
+ ▼
+MQTT Client
+
+============================================================
+
+PROJECT 31
+
+ESP32
+  │
+  │ Publish
+  ▼
+Broker
+  │
+  ▼
+Subscriber
+
+PROJECT 32
+
+Sensor
+  │
+  ▼
+ESP32
+  │
+  │ Publish
+  ▼
+Broker
+  │
+  ▼
+Subscriber
+
+PROJECT 33
+
+Controller
+  │
+  │ Command
+  ▼
+Broker
+  │
+  ▼
+ESP32
+  │
+  ▼
+Actuator
+
+ESP32
+  │
+  │ State
+  ▼
+Broker
+  │
+  ▼
+Controller
+
+============================================================
+
+KEY CONCEPT
+
+PUBLISH + SUBSCRIBE
+        ↓
+TWO-WAY IoT COMMUNICATION
