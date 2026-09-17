@@ -1,0 +1,73 @@
+                    SMART HOME AUTOMATION
+                    =====================
+
+
+                         USER
+                          │
+                          ▼
+                  ┌───────────────┐
+                  │ Phone / Laptop│
+                  │    Browser    │
+                  └───────┬───────┘
+                          │
+                       HTTP
+                          │
+                       Wi-Fi
+                          │
+                          ▼
+                  ┌───────────────┐
+                  │     ESP32     │
+                  │               │
+                  │ Web Server    │
+                  │ State Logic   │
+                  └───────┬───────┘
+                          │
+              ┌───────────┼───────────┐
+              │           │           │
+           GPIO 5      GPIO 18     GPIO 19
+              │           │           │
+              ▼           ▼           ▼
+         ┌────────┐  ┌────────┐  ┌────────┐
+         │Relay 1 │  │Relay 2 │  │Relay 3 │
+         └───┬────┘  └───┬────┘  └───┬────┘
+             │            │            │
+             ▼            ▼            ▼
+           LIGHT          FAN       AUXILIARY
+           DEVICE        DEVICE       DEVICE
+
+
+                    CONTROL MODEL
+
+                    User Request
+                         │
+                         ▼
+                     HTTP Route
+                         │
+                         ▼
+                      ESP32
+                         │
+                         ▼
+                    GPIO Output
+                         │
+                         ▼
+                       Relay
+                         │
+                         ▼
+                       Load
+
+
+                    API MODEL
+
+                 GET /status
+                       │
+                       ▼
+                     ESP32
+                       │
+                       ▼
+                    JSON Data
+
+          {
+            light: true,
+            fan: false,
+            auxiliary: true
+          }
