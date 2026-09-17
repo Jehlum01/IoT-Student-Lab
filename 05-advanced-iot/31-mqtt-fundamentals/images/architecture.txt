@@ -1,0 +1,36 @@
+# Project 31 — MQTT Fundamentals
+
+```text
+                    MQTT ARCHITECTURE
+
+              ┌───────────────────┐
+              │       ESP32       │
+              │                   │
+              │     Publisher     │
+              └─────────┬─────────┘
+                        │
+                        │ MQTT PUBLISH
+                        ▼
+              ┌───────────────────┐
+              │    MQTT BROKER    │
+              │                   │
+              │   Message Router  │
+              └─────────┬─────────┘
+                        │
+                        │ MQTT MESSAGE
+                        ▼
+              ┌───────────────────┐
+              │   PC / LAPTOP     │
+              │                   │
+              │    Subscriber     │
+              └───────────────────┘
+
+Topic:
+iot-student-lab/project31/message
+
+Example payload:
+Hello from ESP32 | Message #1
+
+Learning model:
+Publisher → Broker → Subscriber
+```
