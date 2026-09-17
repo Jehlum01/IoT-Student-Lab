@@ -1,0 +1,143 @@
+# Project 29 — Wi-Fi Motion Alarm Circuit & Architecture
+
+## System Architecture
+
+```mermaid
+flowchart TD
+    A[PIR Motion Sensor] -->|Digital signal| B[ESP32]
+    B --> C{Motion / Alarm State}
+    C -->|Alarm active| D[LED]
+    C -->|Alarm active| E[Buzzer]
+    B --> F[Wi-Fi]
+    F --> G[Local Router]
+    G --> H[Phone / Laptop Browser]
+    H -->|GET /| B
+    H -->|GET /status| B
+    B --> I[HTML Dashboard]
+    B --> J[JSON Status]
+```
+
+## Sense → Decide → Act → Connect → Monitor
+
+```mermaid
+flowchart LR
+    A[Sense<br/>PIR] --> B[Read<br/>GPIO 4]
+    B --> C[Decide<br/>Alarm State]
+    C --> D[Act<br/>LED + Buzzer]
+    C --> E[Connect<br/>Wi-Fi]
+    E --> F[Monitor<br/>Dashboard / JSON]
+```
+
+## Alarm State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Armed
+    Armed --> AlarmActive: motionDetected
+    AlarmActive --> Armed: elapsed >= ALARM_DURATION
+```
+
+```text
+┌───────────────┐
+│ SYSTEM ARMED  │
+│ Alarm OFF     │
+└───────┬───────┘
+        │ Motion detected
+        ▼
+┌───────────────┐
+│ ALARM ACTIVE  │
+│ LED ON        │
+│ Buzzer ON     │
+└───────┬───────┘
+        │ Duration reached
+        ▼
+┌───────────────┐
+│ SYSTEM ARMED  │
+│ LED OFF       │
+│ Buzzer OFF    │
+└───────────────┘
+```
+
+## Decision Logic
+
+```mermaid
+flowchart TD
+    A[Read PIR] --> B{PIR HIGH?}
+    B -->|No| C[Continue]
+    B -->|Yes| D[Record lastMotionTime]
+    D --> E{Alarm active?}
+    E -->|Yes| F[Do not restart]
+    E -->|No| G[Start alarm]
+    G --> H[Record alarmStartTime]
+    H --> I[LED ON]
+    I --> J[Buzzer ON]
+    C --> K{Alarm active and duration reached?}
+    F --> K
+    J --> K
+    K -->|No| L[Continue main loop]
+    K -->|Yes| M[Alarm OFF]
+    M --> N[LED OFF]
+    N --> O[Buzzer OFF]
+```
+
+## Network Model
+
+```text
+Phone/Laptop Browser
+        │
+        │ HTTP
+        ▼
+   Wi-Fi Router
+        │
+        ▼
+ ESP32 Web Server :80
+        │
+   ┌────┴────┐
+   ▼         ▼
+ HTML       JSON
+  /         /status
+```
+
+## Physical vs Network Paths
+
+```text
+                 ┌──► LED
+PIR → ESP32 ─────┼──► Buzzer
+                 │
+                 └──► Wi-Fi → Dashboard / JSON
+```
+
+## Route Table
+
+| Route | Method | Response | Purpose |
+|---|---|---|---|
+| `/` | GET | HTML | Human dashboard |
+| `/status` | GET | JSON | Machine-readable state |
+| Unknown path | GET | 404 text | Error handling |
+
+## Request / Response
+
+```text
+Browser ─── GET / ─────► ESP32
+Browser ◄── 200 HTML ── ESP32
+
+Browser ─ GET /status ─► ESP32
+Browser ◄─ 200 JSON ─── ESP32
+
+Browser ─ GET /unknown ► ESP32
+Browser ◄─ 404 text ─── ESP32
+```
+
+## Software Layers
+
+```text
+┌─────────────────────────────────────────┐
+│ Motion Logic │ Dashboard │ JSON API     │
+├─────────────────────────────────────────┤
+│ ESP32 WebServer + Wi-Fi                 │
+├─────────────────────────────────────────┤
+│ GPIO: PIR / LED / Buzzer                │
+├─────────────────────────────────────────┤
+│ Physical Hardware                        │
+└─────────────────────────────────────────┘
+```
